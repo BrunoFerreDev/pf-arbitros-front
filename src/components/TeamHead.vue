@@ -16,5 +16,6 @@
 <script setup>
 const props = defineProps({
   equipo: Object,
+  categoria: Object,
 });
 </script>

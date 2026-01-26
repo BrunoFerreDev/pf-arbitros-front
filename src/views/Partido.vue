@@ -24,7 +24,7 @@ onMounted(async () => {
 const fetchIncidencias = async () => {
   try {
     const response = await axios.get(
-      "http://localhost:8080/api/partidos/obtener-incidencias-disponibles",
+      "http://localhost:8080/api/incidencias/obtener-disponibles",
     );
     const data = response.data;
     incidencias.value = data;
@@ -54,6 +54,7 @@ const fetchPartido = async () => {
     competencia.value = data.competenciaDTO;
     partido.value = data;
     fetchJugadores();
+    fetchCronologia();
   } catch (error) {
     console.error("Error al obtener el partido:", error);
   }
@@ -66,25 +67,32 @@ onMounted(async () => {
 const fetchJugadores = async () => {
   try {
     const response = await axios.get(
-      `http://localhost:8080/api/partidos/${partido.value.idPartido}/obtener-jugadores`,
+      `http://localhost:8080/api/jugadores/obtener-jugadores`,
+      {
+        params: {
+          idPartido: partido.value.idPartido,
+          categoria: "PRIMERA",
+        },
+      },
     );
     const data = response.data;
-    const datoLocal = data[equipoLocal.value.nombre];
-    const datoVisitante = data[equipoVisitante.value.nombre];
-    equipoLocal.value.jugadores = datoLocal;
-    equipoVisitante.value.jugadores = datoVisitante;
+    console.log(data);
+
+    const datoLocal = data.clubLocal;
+    const datoVisitante = data.clubVisita;
+    equipoLocal.value.jugadores = datoLocal.jugadores;
+    equipoVisitante.value.jugadores = datoVisitante.jugadores;
   } catch (error) {
     console.error("Error al obtener los jugadores:", error);
   }
 };
-//modal
 
+//modal
 // ESTADO
 const mostrarModal = ref(false); // Controla visibilidad
 const jugadorParaIncidencia = ref(null); // Guarda al jugador seleccionado
 // FUNCIONES
 const abrirModal = (jugadorRecibido) => {
-  console.log("2. Padre: Recibí al jugador", jugadorRecibido.apellido);
   jugadorParaIncidencia.value = jugadorRecibido; // 1. Guardamos al jugador
   mostrarModal.value = true; // 2. Mostramos el modal
 };
@@ -99,34 +107,50 @@ const procesarExito = () => {
   alert("Incidencia guardada con éxito");
 };
 
-// Propiedad computada que detecta automáticamente los suplentes del equipo correcto
-const suplentesDelEquipoSeleccionado = computed(() => {
+const equipoSeleccionado = computed(() => {
   const jugador = jugadorParaIncidencia.value;
-  if (!jugador) return [];
+  if (!jugador) return null;
 
-  const idBuscado = jugador.idPersona; // Asegúrate que este sea el campo ID correcto
+  const idBuscado = jugador.idJugador; // Asegúrate que este sea el campo ID correcto
 
   // Función auxiliar para buscar dentro de un equipo
   const perteneceAlEquipo = (equipo) => {
     // Verificamos si existe en titulares O en suplentes de este equipo
-    const enTitulares = equipo.jugadores.titulares?.some(
-      (j) => j.idPersona === idBuscado,
+    const jugadoresTotals = equipo.jugadores.some(
+      (j) => j.idJugador === idBuscado,
     );
-    const enSuplentes = equipo.jugadores.suplentes?.some(
-      (j) => j.idPersona === idBuscado,
-    );
-    return enTitulares || enSuplentes;
+
+    return jugadoresTotals;
   };
 
   // Lógica de decisión: Si está en el Local, devolvemos suplentes locales, sino los visitantes
   if (perteneceAlEquipo(equipoLocal.value)) {
-    console.log("Jugador pertenece al equipo LOCAL");
-    return equipoLocal.value.jugadores.suplentes || [];
+    return equipoLocal.value;
   } else {
-    console.log("Jugador pertenece al equipo VISITANTE");
-    return equipoVisitante.value.jugadores.suplentes || [];
+    return equipoVisitante.value;
   }
 });
+const detallePartido = ref([]);
+//Cronologia
+const fetchCronologia = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/api/partidos/incidencias`,
+      {
+        params: {
+          idPartido: partido.value.idPartido,
+        },
+      },
+    );
+    console.log(response.data);
+    const data = response.data
+    data.sort((a, b) => a.minuto - b.minuto)
+    detallePartido.value = data;
+  } catch (error) {
+    console.error("Error al obtener la cronología:", error);
+  }
+};
+
 </script>
 
 <template>
@@ -254,7 +278,7 @@ const suplentesDelEquipoSeleccionado = computed(() => {
         />
       </div>
     </div>
-    <Cronologia />
+    <Cronologia :detallePartido="detallePartido" />
   </main>
   <div class="lg:hidden fixed bottom-6 right-6">
     <button
@@ -270,7 +294,7 @@ const suplentesDelEquipoSeleccionado = computed(() => {
       :partidoId="partido.idPartido"
       @close="cerrarModal"
       @success="procesarExito"
-      :suplentes="suplentesDelEquipoSeleccionado"
+      :equipo="equipoSeleccionado"
     />
   </Teleport>
 </template>

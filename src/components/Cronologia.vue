@@ -1,5 +1,12 @@
 <script setup>
 import IncidenciaCard from "./IncidenciaCard.vue";
+const { detallePartido } = defineProps({
+  detallePartido: {
+    type: Array,
+    required: true,
+  },
+
+});
 </script>
 
 <template>
@@ -17,7 +24,12 @@ import IncidenciaCard from "./IncidenciaCard.vue";
       </h3>
     </div>
     <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-      <IncidenciaCard />
+      <IncidenciaCard
+        v-for="detalle in detallePartido"
+        :key="detalle.idDetallePartido"
+        :incidencia="detalle.incidencia"
+        :detalle="detalle"
+      />
     </div>
     <div class="p-4 bg-slate-50/50 border-t border-slate-200">
       <button

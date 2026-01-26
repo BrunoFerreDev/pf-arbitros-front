@@ -37,8 +37,8 @@
         </tr>
 
         <tr
-          v-for="(jugador, index) in jugadores.titulares"
-          :key="jugador.idPersona"
+          v-for="(jugador, index) in jugadores"
+          :key="jugador.idJugador"
           class="hover:bg-slate-50 transition-colors group"
         >
           <td class="py-4 px-6 text-blue-700 font-black text-center text-lg">
@@ -80,7 +80,7 @@
           </td>
         </tr>
 
-        <template v-if="jugadores.suplentes && jugadores.suplentes.length > 0">
+        <template v-if="jugadores.suplentes && jugadores">
           <tr class="bg-slate-50">
             <td
               colspan="4"
@@ -91,7 +91,7 @@
           </tr>
           <tr
             v-for="(jugador, index) in jugadores.suplentes"
-            :key="jugador.idPersona"
+            :key="jugador.idJugador"
             class="hover:bg-slate-50 transition-colors opacity-90 group"
           >
             <td class="py-3 px-6 text-slate-400 font-bold text-center text-md">
@@ -150,7 +150,6 @@ const emit = defineEmits(["abrir-modal"]);
 
 // 2. Función local que se ejecuta al hacer click en el botón
 const manejarClickIncidencia = (jugador) => {
-  console.log("1. TableTeam: Click en jugador", jugador.apellido);
   // Emitimos el evento hacia el padre pasando el objeto jugador completo
   emit("abrir-modal", jugador);
 };

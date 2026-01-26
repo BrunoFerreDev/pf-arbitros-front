@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed inset-0 z-50 backdrop-blur-xs flex items-center justify-center p-4"
+    class="fixed inset-0 z-50 backdrop-blur-xs flex items-center justify-center p-4 bg-gray-900/50"
   >
     <div
       class="w-full max-w-[600px] bg-white rounded-xl shadow-2xl overflow-hidden flex flex-col border border-slate-200 animate-in fade-in zoom-in duration-200"
@@ -24,7 +24,7 @@
       <div class="px-6 py-4 bg-slate-50 border-b border-slate-100">
         <div class="flex items-center gap-4">
           <div
-            class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16 border-2 border-blue-500/20"
+            class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16 border-2 border-blue-500/20 shadow-sm"
             :style="{
               backgroundImage: `url(${jugador.foto || 'https://via.placeholder.com/150'})`,
             }"
@@ -34,7 +34,7 @@
               {{ jugador.apellido }}, {{ jugador.nombre }}
             </p>
             <p class="text-[#60758a] text-sm font-medium">
-              DNI: {{ new Intl.NumberFormat("es-AR").format(jugador.dni) }}
+              DNI: {{ new Intl.NumberFormat("es-AR").format(jugador.dni || 0) }}
             </p>
           </div>
         </div>
@@ -54,11 +54,13 @@
               class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 text-sm font-medium transition-all"
               :class="
                 form.tipoIncidencia === tipo.value
-                  ? 'bg-white  shadow-sm text-blue-600 '
+                  ? 'bg-white shadow-sm text-blue-600 font-bold'
                   : 'text-[#60758a] hover:text-slate-800'
               "
             >
-              <span class="truncate">{{ tipo.label }}</span>
+              <span class="flex items-center gap-2">
+                {{ tipo.label }}
+              </span>
               <input
                 class="hidden"
                 type="radio"
@@ -77,21 +79,37 @@
             <div class="relative">
               <input
                 v-model="form.minuto"
-                class="w-full rounded-lg border-slate-200 focus:ring-blue-500 h-12 px-4"
+                class="w-full rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-12 px-4 outline-none transition-all"
                 placeholder="Ej: 42"
                 type="number"
               />
               <span
-                class="absolute right-8 top-1/2 -translate-y-1/2 text-slate-400 text-sm"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium"
                 >' min</span
               >
             </div>
           </div>
 
-          <div
-            v-if="form.tipoIncidencia === 'GOL'"
-            class="flex flex-col animate-in slide-in-from-left-2"
-          ></div>
+          <div class="flex flex-col" v-if="form.tipoIncidencia !== 'CAMBIO'">
+            <label class="text-[#111418] text-sm font-semibold pb-2"
+              >Motivo / Detalle</label
+            >
+            <div class="relative">
+              <select
+                v-model="form.idIncidenciaCatalogo"
+                class="w-full rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-12 px-4 bg-white outline-none transition-all"
+              >
+                <option :value="null">Seleccione...</option>
+                <option
+                  v-for="incidencia in motivosFiltrados"
+                  :key="incidencia.idIncidencia"
+                  :value="incidencia.idIncidencia"
+                >
+                  {{ incidencia.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div
@@ -105,16 +123,17 @@
             Jugador que ingresa
           </label>
           <select
-            v-model="form.idJugadorEntra"
-            class="w-full rounded-lg border-slate-200 border h-12 px-3"
+            v-model="form.jugadorEntrante"
+            class="w-full rounded-lg border-slate-200 border h-12 px-3 bg-white focus:ring-2 focus:ring-blue-500 outline-none"
           >
-            <option :value="null" disabled>Seleccione un suplente...</option>
+            <option :value="null">Seleccione un suplente...</option>
             <option
-              v-for="suplente in props.suplentes"
-              :key="suplente.id"
-              :value="suplente.id"
+              v-for="suplente in props.equipo.jugadores"
+              :key="suplente.idJugador"
+              :value="suplente.idJugador"
             >
-              In: {{ suplente.apellido }}, {{ suplente.nombre }}
+              (#{{ suplente.dorsal }}) {{ suplente.apellido }},
+              {{ suplente.nombre }}
             </option>
           </select>
         </div>
@@ -125,15 +144,16 @@
           >
           <textarea
             v-model="form.descripcion"
-            class="w-full min-h-[80px] rounded-lg border-slate-200 border p-3 text-sm resize-none"
-            placeholder="Ej: Gol de tiro libre, conducta antideportiva..."
+            class="w-full min-h-[80px] rounded-lg border border-slate-200 p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            placeholder="Detalles adicionales..."
           ></textarea>
         </div>
 
         <div
           v-if="errores"
-          class="p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100"
+          class="p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100 flex items-center gap-2"
         >
+          <span class="material-symbols-outlined text-sm">error</span>
           {{ errores }}
         </div>
       </div>
@@ -144,7 +164,7 @@
         <button
           @click.prevent="cerrar"
           :disabled="cargando"
-          class="px-5 py-2.5 rounded-lg text-slate-600 font-bold hover:bg-slate-200 transition-colors"
+          class="px-5 py-2.5 rounded-lg text-slate-600 font-bold hover:bg-slate-200 transition-colors disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -153,7 +173,10 @@
           :disabled="cargando"
           class="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 disabled:opacity-50 transition-all flex items-center gap-2"
         >
-          <span v-if="cargando" class="animate-spin mr-2">...</span>
+          <span
+            v-if="cargando"
+            class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"
+          ></span>
           <span v-else class="material-symbols-outlined text-xl"
             >check_circle</span
           >
@@ -163,101 +186,215 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, reactive, onMounted, watch } from "vue";
-import axios from "axios"; // O tu cliente de API personalizado
+import { ref, reactive, onMounted, watch, computed } from "vue";
+import axios from "axios";
 
 const props = defineProps({
-  // Jugador al que se le carga la incidencia (viene de la fila clickeada)
-  jugador: {
-    type: Object,
-    required: true,
-  },
-  // ID del partido actual para la relación en BD
-  idPartido: {
+  jugador: { type: Object, required: true },
+
+  // 1. CAMBIO AQUÍ: El padre te envía 'partidoId', no 'idPartido'
+  partidoId: {
     type: [Number, String],
     required: true,
   },
-  suplentes: {
-    type: Array,
-    required: true,
-  },
-  equipo: {
-    type: String,
-    required: true,
-  },
+
+  suplentes: { type: Array, required: true },
+  equipo: { type: [Object, String], required: true }, // La corrección anterior
 });
-
 const emit = defineEmits(["close", "success"]);
+const incidenciasDisponibles = ref([]);
 
-// Estado del formulario de incidencia
 const form = reactive({
-  tipoIncidencia: "GOL", // GOL, AMARILLA, ROJA, CAMBIO, etc.
+  tipoIncidencia: "GOL",
   minuto: null,
   descripcion: "",
-  idJugador: props.jugador.idPersona,
-  idPartido: props.idPartido,
+  idIncidenciaCatalogo: null,
+  idJugador: props.jugador.idJugador,
+  idPartido: props.partidoId, // 2. CAMBIO AQUÍ: Usamos 'partidoId' en lugar de 'idPartido'
+  jugadorEntrante: null,
 });
 
 const cargando = ref(false);
 const errores = ref(null);
 
-// Tipos de incidencias (podrías traerlos de un Enum en el Backend si prefieres)
+// ==========================================
+// 1. MAPEO BASADO EN TU NUEVO JSON
+// ==========================================
+// Las claves coinciden con la propiedad "tipo" del JSON
+const mapaTipoIncidencia = {
+  GOL: ["GOL", "GOL_PENAL"], // Agrupa 'Gol', 'Gol en Contra', 'Gol de Penal' y definiciones
+  AMARILLA: ["AMONESTACION"],
+  ROJA: ["EXPULSION"],
+  CAMBIO: ["SUSTITUCION_EGRESA", "SUSTITUCION_INGRESA"],
+};
+
+// ==========================================
+// 2. FILTRADO COMPUTADO
+// ==========================================
+const motivosFiltrados = computed(() => {
+  const tiposBuscados = mapaTipoIncidencia[form.tipoIncidencia];
+  if (!tiposBuscados) return [];
+
+  return incidenciasDisponibles.value.filter((incidencia) =>
+    // Nota: en tu JSON la propiedad es 'tipo', no 'tipo_incidencia'
+    tiposBuscados.includes(incidencia.tipo),
+  );
+});
+
+// TABS VISUALES
 const tiposDisponibles = [
-  { value: "GOL", label: "Gol", icon: "sports_soccer" },
-  {
-    value: "AMARILLA",
-    label: "Tarjeta Amarilla",
-    icon: "style",
-    color: "text-yellow-500",
-  },
-  {
-    value: "ROJA",
-    label: "Tarjeta Roja",
-    icon: "style",
-    color: "text-red-500",
-  },
-  {
-    value: "CAMBIO",
-    label: "Cambio / Sustitución",
-    icon: "published_with_changes",
-  },
+  { value: "GOL", label: "Gol" },
+  { value: "AMARILLA", label: "Amarilla" },
+  { value: "ROJA", label: "Roja" },
+  { value: "CAMBIO", label: "Cambio" },
 ];
 
 const guardarIncidencia = async () => {
   cargando.value = true;
   errores.value = null;
 
-  try {
-    // URL basada en tu estructura de Spring Boot
-    await axios.post("/api/incidencias", form);
+  // 1. Validaciones básicas comunes
+  if (!form.minuto) {
+    errores.value = "Por favor ingrese el minuto.";
+    cargando.value = false;
+    return;
+  }
 
-    // Avisar al padre que todo salió bien para cerrar modal y refrescar
+  try {
+    const url = `http://localhost:8080/api/incidencias/${props.partidoId}/cargar-incidencia`;
+
+    // ==========================================
+    // LÓGICA ESPECÍFICA PARA CAMBIOS (2 PETICIONES)
+    // ==========================================
+    if (form.tipoIncidencia === "CAMBIO") {
+      // Validación extra para cambio: Debe haber un jugador entrante
+      if (!form.jugadorEntrante) {
+        throw new Error("Debes seleccionar el jugador que ingresa.");
+      }
+
+      // Buscamos dinámicamente los IDs del catálogo para asegurar cuál es cuál
+      const motivoSalida = incidenciasDisponibles.value.find(
+        (i) => i.tipo === "SUSTITUCION_EGRESA",
+      );
+      const motivoEntrada = incidenciasDisponibles.value.find(
+        (i) => i.tipo === "SUSTITUCION_INGRESA",
+      );
+
+      if (!motivoSalida || !motivoEntrada) {
+        throw new Error(
+          "No se encontraron los motivos de sustitución en el catálogo.",
+        );
+      }
+
+      // Preparamos las dos promesas (peticiones)
+      const peticionSalida = axios.post(url, {
+        idIncidencia: motivoSalida.idIncidencia,
+        minuto: form.minuto,
+        idJugador: props.jugador.idJugador, // El que sale (el del prop)
+      });
+
+      const peticionEntrada = axios.post(url, {
+        idIncidencia: motivoEntrada.idIncidencia,
+        minuto: form.minuto,
+        idJugador: form.jugadorEntrante, // El que entra (del select)
+      });
+
+      // Ejecutamos ambas al mismo tiempo
+      await Promise.all([peticionSalida, peticionEntrada]);
+    } else {
+      // ==========================================
+      // LÓGICA ESTÁNDAR (GOL, AMARILLA, ROJA)
+      // ==========================================
+      if (!form.idIncidenciaCatalogo) {
+        throw new Error("Por favor seleccione el motivo específico.");
+      }
+
+      await axios.post(url, {
+        idIncidencia: form.idIncidenciaCatalogo,
+        minuto: form.minuto,
+        idJugador: form.idJugador,
+      });
+    }
+
+    // Éxito
     emit("success");
     emit("close");
+    location.reload();
   } catch (error) {
-    console.error("Error al guardar incidencia:", error);
+    console.error("Error:", error);
+    // Si lanzamos un error manual (throw new Error), viene en error.message
+    // Si es de axios, viene en error.response...
     errores.value =
-      error.response?.data?.message || "Error al conectar con el servidor";
+      error.response?.data?.message ||
+      error.message ||
+      "Error al procesar la solicitud";
   } finally {
     cargando.value = false;
   }
 };
-
 const cerrar = () => {
   emit("close");
 };
+
+const fetchIncidenciasDisponibles = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8080/api/incidencias/obtener-disponibles",
+    );
+    // Asignamos la respuesta tal cual viene del JSON
+    incidenciasDisponibles.value = response.data;
+  } catch (error) {
+    console.error("Error al obtener incidencias:", error);
+    errores.value = "No se pudieron cargar los motivos de incidencia.";
+  }
+};
+
+// Lógica especial al cambiar de Tab
 watch(
   () => form.tipoIncidencia,
-  (nuevoValor) => {
-    if (nuevoValor === "CAMBIO") {
-      form.descripcion = ""; // Limpia la observación si cambia a sustitución
+  (nuevoTipo) => {
+    form.idIncidenciaCatalogo = null;
+    form.descripcion = "";
+    form.jugadorEntrante = null;
+    errores.value = null;
+
+    // Opcional: Si es CAMBIO, podrías autoseleccionar "Sustitución: Egreso" si lo deseas
+    if (nuevoTipo === "CAMBIO" && incidenciasDisponibles.value.length > 0) {
+      // Buscamos el ID que corresponde a Egreso (jugador sale)
+      const egreso = incidenciasDisponibles.value.find(
+        (i) => i.tipo === "SUSTITUCION_EGRESA",
+      );
+      if (egreso) form.idIncidenciaCatalogo = egreso.idIncidencia;
     }
   },
 );
+
+onMounted(() => {
+  fetchIncidenciasDisponibles();
+});
 </script>
+
 <style scoped>
-input {
-  border: 1px solid #ccc;
+.animate-in {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes zoom-in {
+  from {
+    transform: scale(0.95);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 </style>

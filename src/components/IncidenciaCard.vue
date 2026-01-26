@@ -7,7 +7,9 @@
     ></div>
     <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
       <div class="flex items-center justify-between mb-1">
-        <span class="text-xs font-bold text-[#607AFB]">62'</span>
+        <span class="text-xs font-bold text-[#607AFB]">{{
+          incidencia.minuto
+        }}</span>
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-sm text-[#607AFB]"
             >sports_soccer</span
@@ -19,8 +21,23 @@
           >
         </div>
       </div>
-      <p class="text-sm font-bold">¡GOL! Man City</p>
-      <p class="text-xs text-slate-500">E. Haaland (Asist: De Bruyne)</p>
+      <p class="text-sm font-bold">{{ incidencia.nombre }}</p>
+      <p class="text-xs text-slate-500">
+        {{ detalle.jugador.nombre + " " + detalle.jugador.apellido }}
+      </p>
     </div>
   </div>
 </template>
+<script setup>
+const { incidencia, detalle, club } = defineProps({
+ 
+  detalle: {
+    type: Object,
+    required: true,
+  },
+  incidencia: {
+    type: Object,
+    required: true,
+  },
+});
+</script>
