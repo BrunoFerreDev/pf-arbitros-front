@@ -10,7 +10,7 @@
       "
     >
       <div
-        class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"
+        class="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"
       ></div>
       <div class="absolute bottom-3 left-4">
         <p
