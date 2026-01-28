@@ -8,7 +8,7 @@
       >
     </div>
     <div>
-      <p class="text-sm font-medium text-slate-500">Equipo Visitante</p>
+      <p class="text-sm font-medium text-slate-500">Equipo {{ isLocal ? 'Local' : 'Visitante' }}</p>
       <h3 class="text-xl font-bold">{{ equipo.nombre }}</h3>
     </div>
   </div>
@@ -17,5 +17,6 @@
 const props = defineProps({
   equipo: Object,
   categoria: Object,
+  isLocal: Boolean,
 });
 </script>

@@ -46,12 +46,12 @@
           </td>
           <td class="py-4 px-6">
             <div class="flex items-center gap-3">
-              <div
-                class="size-10 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border-2 border-blue-200 shadow-sm"
-                :style="{
-                  backgroundImage: `url(${jugador.foto || 'https://via.placeholder.com/150'})`,
-                }"
-              ></div>
+              <picture>
+                <img
+                  src="https://i.pravatar.cc/150?img=3"
+                  class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]"
+                />
+              </picture>
               <div>
                 <p
                   class="font-bold text-slate-900 text-sm uppercase leading-tight"
@@ -99,12 +99,11 @@
             </td>
             <td class="py-3 px-6">
               <div class="flex items-center gap-3">
-                <div
+                <picture
                   class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]"
-                  :style="{
-                    backgroundImage: `url(${jugador.foto || 'https://via.placeholder.com/150'})`,
-                  }"
-                ></div>
+                >
+                  <img src="https://i.pravatar.cc/150?img=3" />
+                </picture>
                 <div>
                   <p class="font-medium text-slate-700 text-sm uppercase">
                     {{ jugador.apellido }}

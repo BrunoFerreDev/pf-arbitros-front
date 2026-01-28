@@ -6,6 +6,7 @@ import TeamHead from "../components/TeamHead.vue";
 import ResultHead from "../components/ResultHead.vue";
 import TableTeam from "../components/TableTeam.vue";
 import ModalIncidencia from "../components/ModalIncidencia.vue";
+import ModalIncidenciaArbitro from "../components/ModalIncidenciaArbitro.vue";
 const activeTab = ref("local");
 // Datos ficticios de ejemplo (estos vendrían de tu API Java)
 const equipoLocal = ref({});
@@ -49,6 +50,7 @@ const fetchPartido = async () => {
     const response = await axios.get("http://localhost:8080/api/partidos/1");
     const data = response.data;
     fetchIncidencias();
+    fetchCatalogoGestion();
     equipoLocal.value = data.clubLocal;
     equipoVisitante.value = data.clubVisitante;
     competencia.value = data.competenciaDTO;
@@ -76,8 +78,6 @@ const fetchJugadores = async () => {
       },
     );
     const data = response.data;
-    console.log(data);
-
     const datoLocal = data.clubLocal;
     const datoVisitante = data.clubVisita;
     equipoLocal.value.jugadores = datoLocal.jugadores;
@@ -87,7 +87,6 @@ const fetchJugadores = async () => {
   }
 };
 
-//modal
 // ESTADO
 const mostrarModal = ref(false); // Controla visibilidad
 const jugadorParaIncidencia = ref(null); // Guarda al jugador seleccionado
@@ -142,15 +141,35 @@ const fetchCronologia = async () => {
         },
       },
     );
-    console.log(response.data);
-    const data = response.data
-    data.sort((a, b) => a.minuto - b.minuto)
+    const data = response.data;
+    data.sort((a, b) => b.incidencia.minuto - a.incidencia.minuto);
     detallePartido.value = data;
   } catch (error) {
     console.error("Error al obtener la cronología:", error);
   }
 };
 
+//Estado arbitro
+const mostrarModalArbitro = ref(false);
+const cerrarModalArbitro = () => {
+  mostrarModalArbitro.value = false;
+};
+const procesarExitoArbitro = () => {
+  mostrarModalArbitro.value = false;
+  fetchCronologia();
+};
+const catalogoGestion = ref([]);
+const fetchCatalogoGestion = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8080/api/incidencias/catalogo-gestion",
+    );
+    const data = response.data;
+    catalogoGestion.value = data;
+  } catch (error) {
+    console.error("Error al obtener el catálogo de gestión:", error);
+  }
+};
 </script>
 
 <template>
@@ -231,13 +250,20 @@ const fetchCronologia = async () => {
             }}
           </strong>
         </div>
+        <button
+          @click="mostrarModalArbitro = true"
+          class="inline-flex items-center gap-1 px-4 py-2 mt-4 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm"
+        >
+          <span class="material-symbols-outlined text-sm">edit_note</span>
+          Cargar Evento
+        </button>
       </div>
       <div
         class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white rounded-xl border border-slate-200 shadow-sm"
       >
-        <TeamHead :equipo="equipoLocal" />
-        <ResultHead />
-        <TeamHead :equipo="equipoVisitante" />
+        <TeamHead :equipo="equipoLocal" :isLocal="true" />
+        <ResultHead :detalle-partido="detallePartido" :partido="partido" />
+        <TeamHead :equipo="equipoVisitante" :isLocal="false" />
       </div>
       <div
         class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
@@ -295,6 +321,15 @@ const fetchCronologia = async () => {
       @close="cerrarModal"
       @success="procesarExito"
       :equipo="equipoSeleccionado"
+    />
+  </Teleport>
+  <Teleport to="body">
+    <ModalIncidenciaArbitro
+      v-if="mostrarModalArbitro"
+      :partidoId="partido.idPartido"
+      @close="cerrarModalArbitro"
+      @success="procesarExitoArbitro"
+      :catalogoGestion="catalogoGestion"
     />
   </Teleport>
 </template>

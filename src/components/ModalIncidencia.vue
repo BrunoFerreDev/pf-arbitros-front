@@ -264,7 +264,6 @@ const guardarIncidencia = async () => {
 
   try {
     const url = `http://localhost:8080/api/incidencias/${props.partidoId}/cargar-incidencia`;
-
     // ==========================================
     // LÓGICA ESPECÍFICA PARA CAMBIOS (2 PETICIONES)
     // ==========================================
@@ -292,13 +291,13 @@ const guardarIncidencia = async () => {
       const peticionSalida = axios.post(url, {
         idIncidencia: motivoSalida.idIncidencia,
         minuto: form.minuto,
-        idJugador: props.jugador.idJugador, // El que sale (el del prop)
+        idPersona: props.jugador.idJugador, // El que sale (el del prop)
       });
 
       const peticionEntrada = axios.post(url, {
         idIncidencia: motivoEntrada.idIncidencia,
         minuto: form.minuto,
-        idJugador: form.jugadorEntrante, // El que entra (del select)
+        idPersona: form.jugadorEntrante, // El que entra (del select)
       });
 
       // Ejecutamos ambas al mismo tiempo
@@ -314,7 +313,7 @@ const guardarIncidencia = async () => {
       await axios.post(url, {
         idIncidencia: form.idIncidenciaCatalogo,
         minuto: form.minuto,
-        idJugador: form.idJugador,
+        idPersona: form.idJugador,
       });
     }
 
