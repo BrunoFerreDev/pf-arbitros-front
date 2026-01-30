@@ -11,7 +11,7 @@ const routes = [
     component: () => import("./views/Partido.vue"),
   },
   {
-    path:"/partido",
+    path:"/partido/:idPartido",
     component: () => import("./views/Partido.vue"),
   }
 ];
