@@ -5,33 +5,35 @@
       <Header />
       <div class="px-8 py-6 space-y-8">
         <div class="border-b border-slate-200 flex flex-col md:flex-row items-start gap-8">
-          <button @click.prevent="activeTab = 'proximos'"
-            :class="activeTab == 'proximos' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
-            class="w-full md:w-auto border-b-2  pb-4 px-1  text-sm font-bold flex items-center gap-2">
-            Próximos
+          <button type="submit" @click.prevent="activeTab = 'pendientes'"
+            :class="activeTab === 'pendientes' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
+            class="cursor-pointer w-full md:w-auto  pb-4 px-1  text-sm font-bold transition-colors">Pendientes de
+            Revisión
             <span class="bg-[#359EFF]/20 text-[#359EFF] text-[10px] px-1.5 py-0.5 rounded-full"
-              v-if="activeTab == 'proximos'">{{ activeTab ==
-                'proximos' ? filteredPartidos.length : '' }}</span>
+              v-if="activeTab === 'pendientes'">{{ filteredPartidos.length }}</span>
           </button>
-          <button @click.prevent="activeTab = 'completados'"
-            :class="activeTab == 'completados' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
-            class="w-full md:w-auto  pb-4 px-1  text-sm font-bold transition-colors">Completados
+          <button @click.prevent="activeTab = 'programados'"
+            :class="activeTab === 'programados' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
+            class="cursor-pointer w-full md:w-auto border-b-2  pb-4 px-1  text-sm font-bold flex items-center gap-2">
+            Programados
             <span class="bg-[#359EFF]/20 text-[#359EFF] text-[10px] px-1.5 py-0.5 rounded-full"
-              v-if="activeTab == 'completados'">{{ activeTab == 'completados' ? filteredPartidos.length : '' }}</span>
+              v-if="activeTab === 'programados'">{{ filteredPartidos.length }}</span>
           </button>
-
-
-
-          <button type="submit" @click.prevent="activeTab == 'pendientes'"
-            class="w-full md:w-auto border-b-2 border-transparent pb-4 px-1 text-slate-500 text-sm font-bold transition-colors"
-            href="#">Pendientes de Revisión</button>
+          <button @click.prevent="activeTab = 'finalizados'"
+            :class="activeTab === 'finalizados' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
+            class="cursor-pointer w-full md:w-auto  pb-4 px-1  text-sm font-bold transition-colors">Finalizados
+            <span class="bg-[#359EFF]/20 text-[#359EFF] text-[10px] px-1.5 py-0.5 rounded-full"
+              v-if="activeTab === 'finalizados'">{{ filteredPartidos.length }}</span>
+          </button>
         </div>
+
         <section>
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-bold flex items-center gap-2">
               <span class="size-2 rounded-full animate-pulse"
-                :class="activeTab == 'proximos' ? 'bg-yellow-400' : 'bg-green-400'"></span>
-              {{ activeTab == 'proximos' ? 'Próximos Partidos' : 'Partidos Completados' }}
+                :class="activeTab === 'proximos' ? 'bg-yellow-400' : 'bg-green-400'"></span>
+              {{ activeTab === 'programados' ? 'Próximos Partidos' : activeTab === 'pendientes' ? 'Partidos Pendientes'
+                : 'Partidos Finalizados' }}
             </h3>
           </div>
           <div class="next-match-list" v-if="filteredPartidos.length > 0">
@@ -62,10 +64,6 @@ const fetchPartidos = async () => {
     const data = response.data;
     const orderData = data.sort((a, b) => b.idPartido - a.idPartido)
     partidos.value = orderData
-    const nextMatchs = partidos.value.filter(partido => partido.estado === 'PENDIENTE')
-    console.log(nextMatchs)
-    const finalMatchs = partidos.value.filter(partido => partido.estado === 'FINALIZADO')
-    console.log(finalMatchs)
   } catch (error) {
     console.log(error);
   }
@@ -73,16 +71,15 @@ const fetchPartidos = async () => {
 onMounted(() => {
   fetchPartidos()
 })
-const activeTab = ref("proximos")
+
+const activeTab = ref("pendientes")
 const filteredPartidos = computed(() => {
-  if (activeTab.value === "completados") {
+  if (activeTab.value === 'programados') {
+    return partidos.value.filter(partido => partido.estado === 'PROGRAMADO')
+  } else if (activeTab.value === 'pendientes') {
+    return partidos.value.filter(partido => partido.estado === 'PENDIENTE_REVISION')
+  } else if (activeTab.value === 'finalizados') {
     return partidos.value.filter(partido => partido.estado === 'FINALIZADO')
-  } else if (activeTab.value === "proximos") {
-    return partidos.value.filter(partido => partido.estado === 'PENDIENTE')
-  } else if (activeTab.value === "pendientes") {
-    return partidos.value.filter(partido => partido.estado === 'ABIERTO')
-  } else {
-    return partidos.value
   }
 })
 </script>

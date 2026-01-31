@@ -19,7 +19,7 @@
                 v-model="form.idIncidencia"
                 class="w-full rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 h-12 px-4 bg-white outline-none transition-all"
               >
-                <option value="1" disabled selected>
+                <option disabled selected>
                   Seleccionar evento...
                 </option>
                 <option

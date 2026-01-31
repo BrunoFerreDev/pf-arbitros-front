@@ -34,12 +34,13 @@
     </div>
     <div class="pt-4 border-t border-slate-100 flex gap-3">
       <button @click.prevent="navigateTo('/partido/' + partido.idPartido)" type="submit"
-        v-if="partido.estado == 'PENDIENTE'"
+        v-if="partido.estado == 'PENDIENTE_REVISION'"
         class="cursor-pointer flex-1 py-2.5 bg-[#359EFF] text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-[18px]">edit_note</span>
         Completar Informe
       </button>
       <button type="submit" v-if="partido.estado == 'FINALIZADO'"
+        @click.prevent="navigateTo('/partido/' + partido.idPartido)"
         class="cursor-pointer flex-1 py-2.5 bg-[#359EFF] text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2">
         <span class="material-symbols-outlined">
           list_alt_check

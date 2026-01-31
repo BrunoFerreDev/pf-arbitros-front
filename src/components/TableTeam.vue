@@ -1,26 +1,18 @@
 <template>
   <div class="overflow-x-auto mt-5 border border-slate-200 rounded-lg">
-    <table class="w-full text-left border-collapse">
+    <table class="w-full text-left border-collapse" :class="!estadoPartido ? ' pointer-events-none' : ''">
       <thead>
         <tr class="border-b border-slate-200 bg-slate-100">
-          <th
-            class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 w-16 text-center"
-          >
+          <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 w-16 text-center">
             #
           </th>
-          <th
-            class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600"
-          >
+          <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600">
             Jugador
           </th>
-          <th
-            class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600"
-          >
+          <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600">
             DNI / F.Identificación
           </th>
-          <th
-            class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 text-right"
-          >
+          <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 text-right">
             Acciones
           </th>
         </tr>
@@ -28,34 +20,24 @@
 
       <tbody class="divide-y divide-slate-100">
         <tr class="bg-blue-50/40">
-          <td
-            colspan="4"
-            class="px-6 py-2 text-[10px] font-bold text-blue-700 uppercase tracking-widest"
-          >
+          <td colspan="4" class="px-6 py-2 text-[10px] font-bold text-blue-700 uppercase tracking-widest">
             Once Inicial (Titulares)
           </td>
         </tr>
 
-        <tr
-          v-for="(jugador, index) in jugadores"
-          :key="jugador.idJugador"
-          class="hover:bg-slate-50 transition-colors group"
-        >
+        <tr v-for="(jugador, index) in jugadores" :key="jugador.idJugador"
+          class="hover:bg-slate-50 transition-colors group">
           <td class="py-4 px-6 text-blue-700 font-black text-center text-lg">
             {{ index + 1 }}
           </td>
           <td class="py-4 px-6">
             <div class="flex items-center gap-3">
               <picture>
-                <img
-                  src="https://i.pravatar.cc/150?img=3"
-                  class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]"
-                />
+                <img src="https://i.pravatar.cc/150?img=3"
+                  class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]" />
               </picture>
               <div>
-                <p
-                  class="font-bold text-slate-900 text-sm uppercase leading-tight"
-                >
+                <p class="font-bold text-slate-900 text-sm uppercase leading-tight">
                   {{ jugador.apellido }}
                 </p>
                 <p class="text-xs text-slate-500">{{ jugador.nombre }}</p>
@@ -64,44 +46,38 @@
           </td>
           <td class="py-4 px-6">
             <span
-              class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium border border-slate-200 bg-white"
-            >
+              class="inline-flex items-center px-2.5 py-1 rounded-md text-sm font-medium border border-slate-200 bg-white">
               {{ formatDNI(jugador.dni) }}
             </span>
           </td>
-          <td class="py-4 px-6 text-right">
-            <button
-              @click="manejarClickIncidencia(jugador)"
-              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm"
-            >
+          <td class="py-3 px-6 text-right">
+            <button @click.prevent="manejarClickIncidencia(jugador)" v-if="estadoPartido"
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all">
               <span class="material-symbols-outlined text-sm">edit_note</span>
               Incidencia
             </button>
+            <span v-else
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all">No
+              se puede editar</span>
           </td>
         </tr>
 
         <template v-if="jugadores.suplentes && jugadores">
           <tr class="bg-slate-50">
-            <td
-              colspan="4"
-              class="px-6 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-200"
-            >
+            <td colspan="4"
+              class="px-6 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-200">
               Banca de Suplentes
             </td>
           </tr>
-          <tr
-            v-for="(jugador, index) in jugadores.suplentes"
-            :key="jugador.idJugador"
-            class="hover:bg-slate-50 transition-colors opacity-90 group"
-          >
+          <tr v-for="(jugador, index) in jugadores.suplentes" :key="jugador.idJugador"
+            class="hover:bg-slate-50 transition-colors opacity-90 group">
             <td class="py-3 px-6 text-slate-400 font-bold text-center text-md">
               {{ 12 + index }}
             </td>
             <td class="py-3 px-6">
               <div class="flex items-center gap-3">
                 <picture
-                  class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]"
-                >
+                  class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]">
                   <img src="https://i.pravatar.cc/150?img=3" />
                 </picture>
                 <div>
@@ -116,13 +92,14 @@
               {{ formatDNI(jugador.dni) }}
             </td>
             <td class="py-3 px-6 text-right">
-              <button
-                @click.prevent="manejarClickIncidencia(jugador)"
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all"
-              >
+              <button @click.prevent="manejarClickIncidencia(jugador)" v-if="estadoPartido"
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all">
                 <span class="material-symbols-outlined text-sm">edit_note</span>
                 Incidencia
               </button>
+              <span v-else
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all">No
+                se puede editar</span>
             </td>
           </tr>
         </template>
@@ -132,6 +109,8 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
+
 const props = defineProps({
   // Cambiamos el tipo de Array a Object porque ahora recibes { titulares: [], suplentes: [] }
   jugadores: {
@@ -139,8 +118,14 @@ const props = defineProps({
     required: true,
     default: () => ({ titulares: [], suplentes: [] }),
   },
+  estadoPartido: {
+    type: Boolean,
+    required: true,
+  }
 });
-
+onMounted(() => {
+  console.log(props.estadoPartido);
+})
 const formatDNI = (dni) => {
   return new Intl.NumberFormat("es-AR").format(dni);
 };

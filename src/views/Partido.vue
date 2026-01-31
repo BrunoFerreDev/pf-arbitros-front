@@ -8,6 +8,7 @@ import ResultHead from "../components/ResultHead.vue";
 import TableTeam from "../components/TableTeam.vue";
 import ModalIncidencia from "../components/ModalIncidencia.vue";
 import ModalIncidenciaArbitro from "../components/ModalIncidenciaArbitro.vue";
+import { IconLoader } from "@tabler/icons-vue";
 const activeTab = ref("local");
 // Datos ficticios de ejemplo (estos vendrían de tu API Java)
 const equipoLocal = ref({});
@@ -21,8 +22,11 @@ const incidenciasSustituciones = ref([]);
 const incidencias = ref([]);
 const router = useRouter();
 const idPartido = router.currentRoute.value.params.idPartido;
+const cargando = ref(true);
 onMounted(async () => {
-  fetchPartido();
+  setTimeout(() => {
+    fetchPartido();
+  }, 1000);
 });
 
 const fetchIncidencias = async () => {
@@ -44,30 +48,40 @@ const fetchIncidencias = async () => {
     incidenciasSustituciones.value = incidencias.value.filter((incidencia) =>
       incidencia.tipo.includes("SUSTITUCION"),
     );
+    return data;
   } catch (error) {
     console.error("Error al obtener las incidencias:", error);
   }
 };
 const fetchPartido = async () => {
   try {
+    cargando.value = true;
+
+    // 1. Obtenemos el partido principal (bloqueante porque necesitamos los datos)
     const response = await axios.get("http://localhost:8080/api/partidos/" + idPartido);
     const data = response.data;
-    fetchIncidencias();
-    fetchCatalogoGestion();
+
+    // 2. Asignamos datos base
     equipoLocal.value = data.clubLocal;
     equipoVisitante.value = data.clubVisitante;
     competencia.value = data.competenciaDTO;
-    partido.value = data;
-    fetchJugadores();
-    fetchCronologia();
+    partido.value = data; // Asumimos que las siguientes funciones usan este valor
+
+    // 3. Ejecutamos las cargas secundarias en paralelo y esperamos a TODAS
+    await Promise.all([
+      fetchIncidencias(),
+      fetchCatalogoGestion(),
+      fetchJugadores(),
+      fetchCronologia()
+    ]);
+
   } catch (error) {
     console.error("Error al obtener el partido:", error);
+  } finally {
+    // 4. El spinner se apaga solo cuando TODO ha terminado
+    cargando.value = false;
   }
 };
-
-onMounted(async () => {
-  fetchPartido();
-});
 
 const fetchJugadores = async () => {
   try {
@@ -85,6 +99,7 @@ const fetchJugadores = async () => {
     const datoVisitante = data.clubVisita;
     equipoLocal.value.jugadores = datoLocal.jugadores;
     equipoVisitante.value.jugadores = datoVisitante.jugadores;
+    return data;
   } catch (error) {
     console.error("Error al obtener los jugadores:", error);
   }
@@ -147,6 +162,7 @@ const fetchCronologia = async () => {
     const data = response.data;
     data.sort((a, b) => b.incidencia.minuto - a.incidencia.minuto);
     detallePartido.value = data;
+    return detallePartido.value;
   } catch (error) {
     console.error("Error al obtener la cronología:", error);
   }
@@ -169,6 +185,7 @@ const fetchCatalogoGestion = async () => {
     );
     const data = response.data;
     catalogoGestion.value = data;
+    return catalogoGestion.value;
   } catch (error) {
     console.error("Error al obtener el catálogo de gestión:", error);
   }
@@ -179,7 +196,7 @@ const fetchCatalogoGestion = async () => {
   <header class="rounded-b-lg border-b border-solid border-slate-200 px-6 py-4 bg-white sticky top-0 z-50">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <div class="size-12 text-[#607AFB]">
+        <div class="size-12 text-[#607AFB] cursor-pointer" @click="$router.back()">
           <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path clip-rule="evenodd"
               d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z"
@@ -188,13 +205,7 @@ const fetchCatalogoGestion = async () => {
         </div>
         <h2 class="text-lg font-bold tracking-tight">Referee Pro Admin</h2>
       </div>
-      <nav class="hidden md:flex items-center gap-8">
-        <a class="text-sm font-medium hover:text-[#607AFB] transition-colors" href="#">Panel</a>
-        <a class="text-sm font-medium hover:text-[#607AFB] transition-colors border-b-2 border-[#607AFB] pb-1"
-          href="#">Informes</a>
-        <a class="text-sm font-medium hover:text-[#607AFB] transition-colors" href="#">Asignaciones</a>
-        <a class="text-sm font-medium hover:text-[#607AFB] transition-colors" href="#">Ajustes</a>
-      </nav>
+      <h4 class="text-md font-medium text-slate-800">Panel para cargar la informacion del partido</h4>
       <div class="flex items-center gap-4">
         <button
           class="bg-[#607AFB] hover:bg-[#607AFB]/90 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-[#607AFB]/20">
@@ -206,7 +217,7 @@ const fetchCatalogoGestion = async () => {
       </div>
     </div>
   </header>
-  <main class="py-2 grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <main class="py-2 grid grid-cols-1 lg:grid-cols-12 gap-8" v-if="!cargando">
     <div class="lg:col-span-8 space-y-6">
       <div class="flex flex-col gap-2 bg-white p-6 rounded-xl border border-slate-200">
         <strong>{{ competencia.nombre }}</strong>
@@ -250,12 +261,21 @@ const fetchCatalogoGestion = async () => {
             Club Visitante : {{ equipoVisitante.nombre }}
           </button>
         </div>
-        <TableTeam v-if="activeTab === 'local'" :jugadores="equipoLocal.jugadores" @abrir-modal="abrirModal" />
-        <TableTeam v-else :jugadores="equipoVisitante.jugadores" @abrir-modal="abrirModal" />
+        <TableTeam v-if="activeTab === 'local'" :jugadores="equipoLocal.jugadores" @abrir-modal="abrirModal"
+          :estadoPartido="partido.estado == 'FINALIZADO' || partido.estado == 'CANCELADO' || partido.estado == 'SUSPENDIDO' ? false : true" />
+        <TableTeam v-else :jugadores="equipoVisitante.jugadores" @abrir-modal="abrirModal"
+          :estadoPartido="partido.estado == 'FINALIZADO' || partido.estado == 'CANCELADO' || partido.estado == 'SUSPENDIDO' ? false : true" />
       </div>
+
     </div>
     <Cronologia :detallePartido="detallePartido" />
   </main>
+  <div v-else class="h-80 flex flex-col gap-3 items-center justify-center">
+    <span class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full ">
+      <IconLoader />
+    </span>
+    Obteniendo Partido
+  </div>
   <div class="lg:hidden fixed bottom-6 right-6">
     <button
       class="size-14 rounded-full bg-[#607AFB] text-white shadow-xl shadow-[#607AFB]/40 flex items-center justify-center">
