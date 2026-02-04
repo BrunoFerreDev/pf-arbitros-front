@@ -1,14 +1,20 @@
+
 <script setup>
-import Cronologia from "../components/Cronologia.vue";
-import { ref, onMounted, Teleport, computed } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
-import TeamHead from "../components/TeamHead.vue";
-import ResultHead from "../components/ResultHead.vue";
-import TableTeam from "../components/TableTeam.vue";
-import ModalIncidencia from "../components/ModalIncidencia.vue";
-import ModalIncidenciaArbitro from "../components/ModalIncidenciaArbitro.vue";
-import { IconLoader } from "@tabler/icons-vue";
+import { IconLoader } from '@tabler/icons-vue';
+import MatchInfoCard from '../components/MatchInfoCard.vue';
+import TeamsTabManager from '../components/TeamsTabManager.vue';
+import ModalIncidencia from '../components/ModalIncidencia.vue';
+import ModalIncidenciaArbitro from '../components/ModalIncidenciaArbitro.vue';
+import Cronologia from '../components/Cronologia.vue';
+import MatchHeader from '../components/MatchHeader.vue';
+import TeamHead from '../components/TeamHead.vue';
+import ResultHead from '../components/ResultHead.vue';
+import { onMounted, ref,computed } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
+// ... (mismos imports de antes)
+
+// ... (toda la lógica de fetchJugadores, fetchPartido, refs de datos, etc., se queda aquí)
 const activeTab = ref("local");
 // Datos ficticios de ejemplo (estos vendrían de tu API Java)
 const equipoLocal = ref({});
@@ -109,10 +115,7 @@ const fetchJugadores = async () => {
 const mostrarModal = ref(false); // Controla visibilidad
 const jugadorParaIncidencia = ref(null); // Guarda al jugador seleccionado
 // FUNCIONES
-const abrirModal = (jugadorRecibido) => {
-  jugadorParaIncidencia.value = jugadorRecibido; // 1. Guardamos al jugador
-  mostrarModal.value = true; // 2. Mostramos el modal
-};
+
 const cerrarModal = () => {
   mostrarModal.value = false;
   jugadorParaIncidencia.value = null; // Opcional: limpiar selección
@@ -128,13 +131,13 @@ const equipoSeleccionado = computed(() => {
   const jugador = jugadorParaIncidencia.value;
   if (!jugador) return null;
 
-  const idBuscado = jugador.idJugador; // Asegúrate que este sea el campo ID correcto
+  const idBuscado = jugador.idPersona; // Asegúrate que este sea el campo ID correcto
 
   // Función auxiliar para buscar dentro de un equipo
   const perteneceAlEquipo = (equipo) => {
     // Verificamos si existe en titulares O en suplentes de este equipo
     const jugadoresTotals = equipo.jugadores.some(
-      (j) => j.idJugador === idBuscado,
+      (j) => j.idPersona === idBuscado,
     );
 
     return jugadoresTotals;
@@ -190,103 +193,51 @@ const fetchCatalogoGestion = async () => {
     console.error("Error al obtener el catálogo de gestión:", error);
   }
 };
+const abrirModal = (jugadorRecibido) => {
+  jugadorParaIncidencia.value = jugadorRecibido;
+  mostrarModal.value = true;
+};
+
+// ... (resto de funciones de cierre y éxito)
 </script>
 
 <template>
-  <header class="rounded-b-lg border-b border-solid border-slate-200 px-6 py-4 bg-white sticky top-0 z-50">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="size-12 text-[#607AFB] cursor-pointer" @click="$router.back()">
-          <svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <path clip-rule="evenodd"
-              d="M24 0.757355L47.2426 24L24 47.2426L0.757355 24L24 0.757355ZM21 35.7574V12.2426L9.24264 24L21 35.7574Z"
-              fill="currentColor" fill-rule="evenodd"></path>
-          </svg>
-        </div>
-        <h2 class="text-lg font-bold tracking-tight">Referee Pro Admin</h2>
-      </div>
-      <h4 class="text-md font-medium text-slate-800">Panel para cargar la informacion del partido</h4>
-      <div class="flex items-center gap-4">
-        <button
-          class="bg-[#607AFB] hover:bg-[#607AFB]/90 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-lg shadow-[#607AFB]/20">
-          Finalizar Informe del Partido
-        </button>
-        <div class="size-10 rounded-full bg-cover bg-center border-2 border-[#2d3a52]" style="
-            background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuAxHea1MFbe4BaURJzQ9WASRAJy--CL38GTNr7zT97QgfEB5wQ1oYfBWe7cuKZFQZAJrDz1LRUekEqwssgT3ITKmdcmPnCnTpwJH1rvCunsvmdzH0JrtXXTxKPCTPsa4kILK0mwzVIBvQPEMaLR19a0fBqFLTzs6FMUSMWoAph_Mg_pJeTwt_HzUF6ijNEAuU0eZE8mTy-GaWMeQ9I7vZJluGJYi-Qe1hAglIhmdSWYMPof8mWnU3k-NdzXzMMbk_eRXDqL9mOGIhg&quot;);
-          "></div>
-      </div>
-    </div>
-  </header>
-  <main class="py-2 grid grid-cols-1 lg:grid-cols-12 gap-8" v-if="!cargando">
+  <MatchHeader />
+
+  <main class="py-2 px-6 grid grid-cols-1 lg:grid-cols-12 gap-8" v-if="!cargando">
     <div class="lg:col-span-8 space-y-6">
-      <div class="flex flex-col gap-2 bg-white p-6 rounded-xl border border-slate-200">
-        <strong>{{ competencia.nombre }}</strong>
-        <div class="flex flex-col gap-2">
-          <strong class="text-sm font-medium text-slate-500">Fecha Numero: {{ partido.fechaTorneo }}</strong>
-          <strong class="text-sm font-medium text-slate-500">
-            Programado para el dia
-            {{
-              new Date(partido.fecha).toLocaleDateString() +
-              " " +
-              new Date(partido.hora).toLocaleTimeString()
-            }}
-          </strong>
-        </div>
-        <button @click="mostrarModalArbitro = true"
-          class="inline-flex items-center gap-1 px-4 py-2 mt-4 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm">
-          <span class="material-symbols-outlined text-sm">edit_note</span>
-          Cargar Evento
-        </button>
-      </div>
-      <div
-        class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
+      
+      <MatchInfoCard
+        :competencia="competencia" 
+        :partido="partido" 
+        @openArbitroModal="mostrarModalArbitro = true" 
+      />
+
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
         <TeamHead :equipo="equipoLocal" :isLocal="true" />
         <ResultHead :detalle-partido="detallePartido" :partido="partido" />
         <TeamHead :equipo="equipoVisitante" :isLocal="false" />
       </div>
-      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="flex w-full justify-between px-10">
-          <button @click.prevent="activeTab = 'local'" :class="activeTab === 'local'
-            ? 'border-[#607AFB] text-[#607AFB]'
-            : 'border-transparent text-slate-500 hover:text-slate-700'
-            "
-            class="flex items-center gap-2 px-6 py-4 font-bold whitespace-nowrap border-b-2 transition-colors duration-200">
-            Club Local : {{ equipoLocal.nombre }}
-          </button>
-          <button @click.prevent="activeTab = 'visita'" :class="activeTab === 'visita'
-            ? 'border-[#607AFB] text-[#607AFB]'
-            : 'border-transparent text-slate-500 hover:text-slate-700'
-            "
-            class="flex items-center gap-2 px-6 py-4 font-bold whitespace-nowrap border-b-2 transition-colors duration-200">
-            Club Visitante : {{ equipoVisitante.nombre }}
-          </button>
-        </div>
-        <TableTeam v-if="activeTab === 'local'" :jugadores="equipoLocal.jugadores" @abrir-modal="abrirModal"
-          :estadoPartido="partido.estado == 'FINALIZADO' || partido.estado == 'CANCELADO' || partido.estado == 'SUSPENDIDO' ? false : true" />
-        <TableTeam v-else :jugadores="equipoVisitante.jugadores" @abrir-modal="abrirModal"
-          :estadoPartido="partido.estado == 'FINALIZADO' || partido.estado == 'CANCELADO' || partido.estado == 'SUSPENDIDO' ? false : true" />
-      </div>
 
+      <TeamsTabManager
+        :equipoLocal="equipoLocal" 
+        :equipoVisitante="equipoVisitante" 
+        :partido="partido"
+        @abrir-modal="abrirModal"
+      />
     </div>
+
     <Cronologia :detallePartido="detallePartido" />
   </main>
+
   <div v-else class="h-80 flex flex-col gap-3 items-center justify-center">
-    <span class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full ">
-      <IconLoader />
-    </span>
-    Obteniendo Partido
+    <IconLoader class="animate-spin text-[#607AFB]" />
+    <span>Obteniendo Partido...</span>
   </div>
-  <div class="lg:hidden fixed bottom-6 right-6">
-    <button
-      class="size-14 rounded-full bg-[#607AFB] text-white shadow-xl shadow-[#607AFB]/40 flex items-center justify-center">
-      <span class="material-symbols-outlined text-3xl">check</span>
-    </button>
-  </div>
+
   <Teleport to="body">
     <ModalIncidencia v-if="mostrarModal" :jugador="jugadorParaIncidencia" :partidoId="partido.idPartido"
       @close="cerrarModal" @success="procesarExito" :equipo="equipoSeleccionado" />
-  </Teleport>
-  <Teleport to="body">
     <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido.idPartido" @close="cerrarModalArbitro"
       @success="procesarExitoArbitro" :catalogoGestion="catalogoGestion" />
   </Teleport>

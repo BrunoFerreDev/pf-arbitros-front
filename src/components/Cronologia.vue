@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted, ref } from "vue";
 import IncidenciaCard from "./IncidenciaCard.vue";
 const { detallePartido } = defineProps({
   detallePartido: {
@@ -6,6 +7,11 @@ const { detallePartido } = defineProps({
     required: true,
   },
 });
+onMounted(() => {
+  console.log(detallePartido);
+});
+
+
 </script>
 
 <template>
@@ -27,8 +33,8 @@ const { detallePartido } = defineProps({
           v-for="detalle in detallePartido"
           :key="detalle.idDetallePartido"
           :incidencia="detalle.incidencia"
-          :club="detalle.club"
-          :jugador="detalle.jugador"
+          :club="detalle.idClub"
+          :jugador="detalle.persona"
         />
       </div>
     </div>
