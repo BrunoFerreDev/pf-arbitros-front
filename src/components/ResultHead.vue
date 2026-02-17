@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 
 // Definimos las props. Necesitamos 'partido' para saber el ID del club local.
 const props = defineProps({
@@ -44,35 +44,35 @@ const props = defineProps({
     required: true,
   },
 });
-
+onMounted(() => {
+  console.log(props.detallePartido);
+});
 // Usamos computed: Vue recalcula esto automáticamente si cambian los props
 const marcador = computed(() => {
   let golesLocal = 0;
   let golesVisitante = 0;
 
   // 1. Obtenemos el ID del Local desde la prop 'partido'
-  // Ajusta '.idClub' si en tu objeto partido el ID tiene otro nombre
-  const idLocal =
-    props.partido?.clubLocal?.idClub || props.partido?.equipoLocal?.idClub;
+  const idLocal = props.partido?.clubLocal?.idClub;
+  const idVisitante = props.partido?.clubVisitante?.idClub;
 
-  if (!idLocal) {
+  if (!idLocal || !idVisitante) {
     // Si aún no cargó el partido, retornamos 0-0 para evitar errores
     return { local: 0, visitante: 0 };
   }
 
   // 2. Recorremos el array de incidencias
   props.detallePartido.forEach((item) => {
-    // Verificamos si es GOL (Asegúrate que en tu BD sea "GOL" o "Gol")
-    if (
-      item.incidencia?.tipo.includes("GOL") ||
-      item.incidencia?.tipo.includes("GOL_PENAL")
-    ) {
+    // Verificamos si es GOL
+    const esGol = item.incidencia?.tipo === 'GOL' || item.incidencia?.tipo === 'GOL_PENAL';
+    
+    if (esGol) {
       // Obtenemos el ID del club que hizo el gol
-      const idClubAnotador = item.club?.idClub;
+      const idClubAnotador = item.idClub;
 
       if (idClubAnotador === idLocal) {
         golesLocal++;
-      } else {
+      } else if (idClubAnotador === idVisitante) {
         golesVisitante++;
       }
     }

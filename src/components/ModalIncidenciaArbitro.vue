@@ -136,7 +136,7 @@ const confirmar = async () => {
   loading.value = true;
   try {
     const response = await axios.post(
-      "http://localhost:8080/api/incidencias/cargar-incidencia-gestion",
+      "http://localhost:8080/api/arbitros/partido/cargar-incidencia-gestion",
       {
         idPartido: props.partidoId,
         idIncidencia: form.idIncidencia,
@@ -148,6 +148,7 @@ const confirmar = async () => {
       {
         headers: {
           "Content-Type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
         },
       },
     );

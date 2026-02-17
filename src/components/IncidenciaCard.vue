@@ -70,7 +70,10 @@ const fetchClub = async () => {
     const response = await axios.get(`http://localhost:8080/api/club/informacion`, {
       params: {
         idClub: props.club
-      }
+      },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
     clubData.value = response.data;
   } catch (error) {

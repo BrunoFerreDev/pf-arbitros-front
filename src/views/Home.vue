@@ -1,47 +1,64 @@
 <template>
   <div class="flex h-screen overflow-hidden bg-[#f5f7f8]/80">
-    <Aside />
+    <Aside :arbitro="arbitro" />
     <main class="flex-1 flex flex-col overflow-y-auto">
       <Header />
       <div class="px-8 py-6 space-y-8">
         <div class="border-b border-slate-200 flex flex-col md:flex-row items-start gap-8">
-          <button type="submit" @click.prevent="activeTab = 'pendientes'"
-            :class="activeTab === 'pendientes' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
-            class="cursor-pointer w-full md:w-auto  pb-4 px-1  text-sm font-bold transition-colors">Pendientes de
-            Revisión
-            <span class="bg-[#359EFF]/20 text-[#359EFF] text-[10px] px-1.5 py-0.5 rounded-full"
-              v-if="activeTab === 'pendientes'">{{ filteredPartidos.length }}</span>
+          <button @click="() => {
+            estadoPartido = 'FINALIZADO'
+            pagination.page = 0;
+            traerPartidos();
+          }"
+            :class="estadoPartido === 'FINALIZADO' ? 'border-[#359EFF] text-[#359EFF]' : 'border-transparent text-slate-500'"
+            class="w-full md:w-auto border-b-2 pb-4 px-1 text-sm font-bold flex items-center gap-2">Finalizados
           </button>
-          <button @click.prevent="activeTab = 'programados'"
-            :class="activeTab === 'programados' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
-            class="cursor-pointer w-full md:w-auto border-b-2  pb-4 px-1  text-sm font-bold flex items-center gap-2">
-            Programados
-            <span class="bg-[#359EFF]/20 text-[#359EFF] text-[10px] px-1.5 py-0.5 rounded-full"
-              v-if="activeTab === 'programados'">{{ filteredPartidos.length }}</span>
+          <button @click="() => {
+            estadoPartido = 'PROGRAMADO';
+            pagination.page = 0;
+            traerPartidos();
+          }"
+            :class="estadoPartido === 'PROGRAMADO' ? 'border-[#359EFF] text-[#359EFF]' : 'border-transparent text-slate-500'"
+            class="w-full md:w-auto border-b-2 pb-4 px-1 text-sm font-bold flex items-center gap-2">
+            Próximos
           </button>
-          <button @click.prevent="activeTab = 'finalizados'"
-            :class="activeTab === 'finalizados' ? 'border-[#359EFF] text-[#359EFF] border-b-2' : 'border-transparent text-slate-500 hover:text-slate-700'"
-            class="cursor-pointer w-full md:w-auto  pb-4 px-1  text-sm font-bold transition-colors">Finalizados
-            <span class="bg-[#359EFF]/20 text-[#359EFF] text-[10px] px-1.5 py-0.5 rounded-full"
-              v-if="activeTab === 'finalizados'">{{ filteredPartidos.length }}</span>
+          <button @click="() => {
+            estadoPartido = 'PENDIENTE'
+            pagination.page = 0;
+            traerPartidos();
+          }"
+            :class="estadoPartido === 'PENDIENTE' ? 'border-[#359EFF] text-[#359EFF]' : 'border-transparent text-slate-500'"
+            class="w-full md:w-auto border-b-2 pb-4 px-1 text-sm font-bold flex items-center gap-2">Pendientes
+            de Revisión
           </button>
         </div>
 
         <section>
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-bold flex items-center gap-2">
-              <span class="size-2 rounded-full animate-pulse"
-                :class="activeTab === 'proximos' ? 'bg-yellow-400' : 'bg-green-400'"></span>
-              {{ activeTab === 'programados' ? 'Próximos Partidos' : activeTab === 'pendientes' ? 'Partidos Pendientes'
-                : 'Partidos Finalizados' }}
+              <span class="size-2 rounded-full bg-red-500 animate-pulse"></span>
+              {{ estadoPartido === 'PROGRAMADO' ?
+                'Próximos' : estadoPartido === 'FINALIZADO' ? 'Finalizados' : 'Pendientes'
+                  + 'de Revisión' }}
             </h3>
           </div>
-          <div class="next-match-list" v-if="filteredPartidos.length > 0">
-            <MatchCard v-for="p in filteredPartidos" :key="p.id" :partido="p" />
+          <div class="next-match-list">
+            <MatchCard v-if="partidos.length > 0" v-for="partido in partidos" :key="partido.idPartido"
+              :partido="partido" />
+            <p v-else>No hay partidos {{ estadoPartido === 'PROGRAMADO' ? 'próximos' : estadoPartido === 'FINALIZADO' ?
+              'finalizados' : 'pendientes de revisión' }}</p>
           </div>
+          <Pagination v-if="partidos.length > 0" :page="pagination.page" :totalPages="pagination.totalPages"
+            :totalElements="pagination.totalElements" :size="pagination.size" @page-change="handlePageChange" />
         </section>
 
-        <StatsRefeere :stats="{ cantidadPartidos: partidos.length }" />
+        <StatsRefeere :stats="{
+          partidosEstaTemporada: pagination.totalElements,
+          tarjetasAmarillas: 82,
+          tarjetasRojas: 3,
+          distanciaMedia: 10.4,
+          calificacionMedia: 4.8,
+        }" />
       </div>
       <Footer />
     </main>
@@ -51,37 +68,69 @@
 import Aside from "../components/Aside.vue";
 import MatchCard from "../components/MatchCard.vue";
 import Header from "../components/Header.vue";
-import NextMatchCard from "../components/NextMatchCard.vue";
+import Pagination from "../components/Pagination.vue";
 import StatsRefeere from "../components/StatsRefeere.vue";
 import Footer from "../components/Footer.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import axios from "axios";
-const partidos = ref([])
-
-const fetchPartidos = async () => {
+const arbitro = ref({});
+const partidos = ref([]);
+const estadoPartido = ref("FINALIZADO")
+const pagination = ref({
+  page: 0,
+  size: 10,
+  totalPages: 0,
+  totalElements: 0,
+});
+const traerArbitro = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/api/arbitros/buscar-designaciones?idArbitro=1")
+    const response = await axios.get("http://localhost:8080/api/personas/autenticado", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
     const data = response.data;
-    const orderData = data.sort((a, b) => b.idPartido - a.idPartido)
-    partidos.value = orderData
+    arbitro.value = data;
+    traerPartidos();
   } catch (error) {
-    console.log(error);
+    console.error("Error al obtener el arbitro:", error);
+  }
+}
+const traerPartidos = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/api/arbitros/buscar-designaciones", {
+      params: {
+        idArbitro: arbitro.value.idPersona,
+        estado: estadoPartido.value,
+        page: pagination.value.page,
+        size: pagination.value.size,
+      },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = response.data;
+    partidos.value = data.content;
+    pagination.value.totalPages = data.totalPages;
+    pagination.value.totalElements = data.totalElements;
+    console.log(data);
+
+  } catch (error) {
+    console.error("Error al obtener el arbitro:", error);
   }
 }
 onMounted(() => {
-  fetchPartidos()
-})
+  traerArbitro();
+});
+watch([() => pagination.value.page, () => pagination.value.size], () => {
+  traerPartidos();
+});
 
-const activeTab = ref("pendientes")
-const filteredPartidos = computed(() => {
-  if (activeTab.value === 'programados') {
-    return partidos.value.filter(partido => partido.estado === 'PROGRAMADO')
-  } else if (activeTab.value === 'pendientes') {
-    return partidos.value.filter(partido => partido.estado === 'PENDIENTE_REVISION')
-  } else if (activeTab.value === 'finalizados') {
-    return partidos.value.filter(partido => partido.estado === 'FINALIZADO')
-  }
-})
+// --- EVENTOS ---
+const handlePageChange = (newPage) => {
+  // Solo actualizamos el valor, el watcher detectará el cambio y llamará a fetchArbitros
+  pagination.value.page = newPage;
+};
 </script>
 <style scoped>
 .next-match-list {

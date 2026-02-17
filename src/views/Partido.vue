@@ -1,154 +1,85 @@
 
 <script setup>
+import { onMounted, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { IconLoader } from '@tabler/icons-vue';
+
+// Importamos nuestra lógica separada
+import { useMatchData } from '../hooks/useMatchData.js';
+
+// Componentes UI
+import MatchHeader from '../components/MatchHeader.vue';
 import MatchInfoCard from '../components/MatchInfoCard.vue';
-import TeamsTabManager from '../components/TeamsTabManager.vue';
+import TeamHead from '../components/TeamHead.vue';
+import TeamsTabsManager from '../components/TeamsTabsManager.vue';
 import ModalIncidencia from '../components/ModalIncidencia.vue';
 import ModalIncidenciaArbitro from '../components/ModalIncidenciaArbitro.vue';
 import Cronologia from '../components/Cronologia.vue';
-import MatchHeader from '../components/MatchHeader.vue';
-import TeamHead from '../components/TeamHead.vue';
 import ResultHead from '../components/ResultHead.vue';
-import { onMounted, ref,computed } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
-// ... (mismos imports de antes)
 
-// ... (toda la lógica de fetchJugadores, fetchPartido, refs de datos, etc., se queda aquí)
-const activeTab = ref("local");
-// Datos ficticios de ejemplo (estos vendrían de tu API Java)
-const equipoLocal = ref({});
-const equipoVisitante = ref({});
-const competencia = ref({});
-const partido = ref({});
-const incidenciasAmonestaciones = ref([]);
-const incidenciasExpulsiones = ref([]);
-const incidenciasGoles = ref([]);
-const incidenciasSustituciones = ref([]);
-const incidencias = ref([]);
 const router = useRouter();
 const idPartido = router.currentRoute.value.params.idPartido;
-const cargando = ref(true);
-onMounted(async () => {
-  setTimeout(() => {
-    fetchPartido();
-  }, 1000);
+
+// --- USO DEL COMPOSABLE ---
+const {
+  cargando,
+  partido,
+  clubLocal,
+  clubVisita,
+  jugadoresLocal,
+  jugadoresVisitante,
+  cronologia,
+  catalogoGestion,
+  initData,
+  fetchCronologia
+} = useMatchData(idPartido);
+
+onMounted(() => {
+
+  initData();
 });
 
-const fetchIncidencias = async () => {
-  try {
-    const response = await axios.get(
-      "http://localhost:8080/api/incidencias/obtener-disponibles",
-    );
-    const data = response.data;
-    incidencias.value = data;
-    incidenciasAmonestaciones.value = incidencias.value.filter(
-      (incidencia) => incidencia.tipo === "AMONESTACION",
-    );
-    incidenciasExpulsiones.value = incidencias.value.filter(
-      (incidencia) => incidencia.tipo === "EXPULSION",
-    );
-    incidenciasGoles.value = incidencias.value.filter(
-      (incidencia) => incidencia.tipo === "GOL",
-    );
-    incidenciasSustituciones.value = incidencias.value.filter((incidencia) =>
-      incidencia.tipo.includes("SUSTITUCION"),
-    );
-    return data;
-  } catch (error) {
-    console.error("Error al obtener las incidencias:", error);
-  }
+// --- GESTIÓN DE MODALES Y UI ---
+const mostrarModal = ref(false);
+const mostrarModalArbitro = ref(false);
+const jugadorParaIncidencia = ref(null);
+
+// Lógica de Modales
+const abrirModal = (jugadorRecibido) => {
+  jugadorParaIncidencia.value = jugadorRecibido;
+  mostrarModal.value = true;
 };
-const fetchPartido = async () => {
-  try {
-    cargando.value = true;
-
-    // 1. Obtenemos el partido principal (bloqueante porque necesitamos los datos)
-    const response = await axios.get("http://localhost:8080/api/partidos/" + idPartido);
-    const data = response.data;
-
-    // 2. Asignamos datos base
-    equipoLocal.value = data.clubLocal;
-    equipoVisitante.value = data.clubVisitante;
-    competencia.value = data.competenciaDTO;
-    partido.value = data; // Asumimos que las siguientes funciones usan este valor
-
-    // 3. Ejecutamos las cargas secundarias en paralelo y esperamos a TODAS
-    await Promise.all([
-      fetchIncidencias(),
-      fetchCatalogoGestion(),
-      fetchJugadores(),
-      fetchCronologia()
-    ]);
-
-  } catch (error) {
-    console.error("Error al obtener el partido:", error);
-  } finally {
-    // 4. El spinner se apaga solo cuando TODO ha terminado
-    cargando.value = false;
-  }
-};
-
-const fetchJugadores = async () => {
-  try {
-    const response = await axios.get(
-      `http://localhost:8080/api/jugadores/obtener-jugadores`,
-      {
-        params: {
-          idPartido: partido.value.idPartido,
-          categoria: "PRIMERA",
-        },
-      },
-    );
-    const data = response.data;
-    const datoLocal = data.clubLocal;
-    const datoVisitante = data.clubVisita;
-    equipoLocal.value.jugadores = datoLocal.jugadores;
-    equipoVisitante.value.jugadores = datoVisitante.jugadores;
-    return data;
-  } catch (error) {
-    console.error("Error al obtener los jugadores:", error);
-  }
-};
-
-// ESTADO
-const mostrarModal = ref(false); // Controla visibilidad
-const jugadorParaIncidencia = ref(null); // Guarda al jugador seleccionado
-// FUNCIONES
 
 const cerrarModal = () => {
   mostrarModal.value = false;
-  jugadorParaIncidencia.value = null; // Opcional: limpiar selección
+  jugadorParaIncidencia.value = null;
 };
+
 const procesarExito = () => {
   cerrarModal();
-  // Aquí podrías llamar a una función para recargar los datos de la tabla
-  // ej: cargarJugadores();
+  fetchCronologia(); // Recargamos la cronología al guardar
   alert("Incidencia guardada con éxito");
 };
 
+const cerrarModalArbitro = () => mostrarModalArbitro.value = false;
+const procesarExitoArbitro = () => {
+  mostrarModalArbitro.value = false;
+  fetchCronologia();
+};
+
+// --- CORRECCIÓN LÓGICA IMPORTANTE ---
+// En tu código original, usabas clubLocal.value dentro del computed, pero clubLocal no existía como ref.
+// Ahora accedemos a través del objeto `partido`.
 const equipoSeleccionado = computed(() => {
   const jugador = jugadorParaIncidencia.value;
-  if (!jugador) return null;
+  if (!jugador || !partido.value.clubLocal) return null;
 
-  const idBuscado = jugador.idPersona; // Asegúrate que este sea el campo ID correcto
+  const idBuscado = jugador.idPersona; // Asegúrate que este ID coincida con tu modelo
 
-  // Función auxiliar para buscar dentro de un equipo
-  const perteneceAlEquipo = (equipo) => {
-    // Verificamos si existe en titulares O en suplentes de este equipo
-    const jugadoresTotals = equipo.jugadores.some(
-      (j) => j.idPersona === idBuscado,
-    );
+  // Buscamos en la lista de jugadores que ya descargamos
+  const esLocal = jugadoresLocal.value.some(j => j.idPersona === idBuscado);
 
-    return jugadoresTotals;
-  };
-
-  // Lógica de decisión: Si está en el Local, devolvemos suplentes locales, sino los visitantes
-  if (perteneceAlEquipo(equipoLocal.value)) {
-    return equipoLocal.value;
-  } else {
-    return equipoVisitante.value;
-  }
+  return esLocal ? partido.value.clubLocal : partido.value.clubVisita;
 });
 const detallePartido = ref([]);
 //Cronologia
@@ -204,41 +135,36 @@ const abrirModal = (jugadorRecibido) => {
 <template>
   <MatchHeader />
 
-  <main class="py-2 px-6 grid grid-cols-1 lg:grid-cols-12 gap-8" v-if="!cargando">
-    <div class="lg:col-span-8 space-y-6">
-      
-      <MatchInfoCard
-        :competencia="competencia" 
-        :partido="partido" 
-        @openArbitroModal="mostrarModalArbitro = true" 
-      />
-
-      <div class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-        <TeamHead :equipo="equipoLocal" :isLocal="true" />
-        <ResultHead :detalle-partido="detallePartido" :partido="partido" />
-        <TeamHead :equipo="equipoVisitante" :isLocal="false" />
-      </div>
-
-      <TeamsTabManager
-        :equipoLocal="equipoLocal" 
-        :equipoVisitante="equipoVisitante" 
-        :partido="partido"
-        @abrir-modal="abrirModal"
-      />
-    </div>
-
-    <Cronologia :detallePartido="detallePartido" />
-  </main>
-
-  <div v-else class="h-80 flex flex-col gap-3 items-center justify-center">
+  <div v-if="cargando" class="h-80 flex flex-col gap-3 items-center justify-center">
     <IconLoader class="animate-spin text-[#607AFB]" />
     <span>Obteniendo Partido...</span>
   </div>
 
+  <main v-else class="py-2 px-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+    <div class="lg:col-span-8 space-y-6">
+
+      <MatchInfoCard :competencia="partido.competenciaDTO" :partido="partido"
+        @openArbitroModal="mostrarModalArbitro = true" />
+
+      <div
+        class="flex flex-col md:flex-row items-center justify-between gap-4 p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
+        <TeamHead :equipo="clubLocal" :isLocal="true" />
+        <ResultHead :detalle-partido="cronologia" :partido="partido" />
+        <TeamHead :equipo="clubVisita" :isLocal="false" />
+      </div>
+
+      <TeamsTabsManager :clubLocal="clubLocal" :clubVisita="clubVisita" :partido="partido"
+        :jugadoresLocal="jugadoresLocal" :jugadoresVisitante="jugadoresVisitante" @abrir-modal="abrirModal" />
+    </div>
+
+    <Cronologia :detallePartido="cronologia" />
+  </main>
+
   <Teleport to="body">
-    <ModalIncidencia v-if="mostrarModal" :jugador="jugadorParaIncidencia" :partidoId="partido.idPartido"
-      @close="cerrarModal" @success="procesarExito" :equipo="equipoSeleccionado" />
-    <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido.idPartido" @close="cerrarModalArbitro"
-      @success="procesarExitoArbitro" :catalogoGestion="catalogoGestion" />
+    <ModalIncidencia v-if="mostrarModal" :jugador="jugadorParaIncidencia" :partidoId="partido?.idPartido"
+      :equipo="equipoSeleccionado" @close="cerrarModal" @success="procesarExito" />
+
+    <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido?.idPartido"
+      :catalogoGestion="catalogoGestion" @close="cerrarModalArbitro" @success="procesarExitoArbitro" />
   </Teleport>
 </template>
