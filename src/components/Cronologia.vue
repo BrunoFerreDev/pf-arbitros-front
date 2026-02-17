@@ -8,6 +8,7 @@ const { detallePartido } = defineProps({
   },
 });
 onMounted(() => {
+  console.log(detallePartido);
 });
 
 

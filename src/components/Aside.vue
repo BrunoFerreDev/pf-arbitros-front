@@ -17,14 +17,14 @@
         </div>
         <nav class="flex flex-col gap-2">
           <div class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#359EFF]/10 text-[#359EFF]">
-            <RouterLink :to="{ name: 'Dashboard' }" class="inline-flex items-center gap-3">
+            <RouterLink to="/" class="inline-flex items-center gap-3">
               <span class="material-symbols-outlined fill-icon">dashboard</span>
               <p class="text-sm font-semibold leading-normal">
                 Panel Principal
               </p>
             </RouterLink>
           </div>
-          <!-- <div
+          <div
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
             <span class="material-symbols-outlined">calendar_today</span>
             <RouterLink :to="{ name: 'Agenda' }">

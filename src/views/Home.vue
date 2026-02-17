@@ -32,6 +32,7 @@
             de Revisión
           </button>
         </div>
+
         <section>
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-bold flex items-center gap-2">

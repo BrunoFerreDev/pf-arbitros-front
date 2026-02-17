@@ -9,7 +9,7 @@
       </div>
       <span class="material-symbols-outlined text-slate-400 cursor-pointer">more_vert</span>
     </div>
-    <div class="flex items-center justify-between px-4">
+    <div class="flex items-center justify-between px-4 h-full max-h-44">
       <div class="flex flex-col items-center gap-3 flex-1 text-center">
         <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Local</p>
         <div class="size-16 bg-slate-100 rounded-full flex items-center justify-center p-2">
@@ -39,7 +39,7 @@
       <button @click.prevent="navigateTo('/dashboard/partido/' + partido.idPartido)"
         class="flex-1 py-2.5 bg-[#359EFF] text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-[18px]">edit_note</span>
-        Cargar Informe
+        Completar Informe
       </button>
       <button class="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold">
         Detalles
@@ -50,8 +50,13 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-
 const router = useRouter();
+const props = defineProps({
+  partido: {
+    type: Object,
+    required: true,
+  },
+});
 
 const navigateTo = (route) => {
   router.push(route);

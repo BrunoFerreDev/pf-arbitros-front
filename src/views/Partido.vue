@@ -1,3 +1,4 @@
+
 <script setup>
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
@@ -80,6 +81,55 @@ const equipoSeleccionado = computed(() => {
 
   return esLocal ? partido.value.clubLocal : partido.value.clubVisita;
 });
+const detallePartido = ref([]);
+//Cronologia
+const fetchCronologia = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/api/partidos/incidencias`,
+      {
+        params: {
+          idPartido: partido.value.idPartido,
+        },
+      },
+    );
+    const data = response.data;
+    data.sort((a, b) => b.incidencia.minuto - a.incidencia.minuto);
+    detallePartido.value = data;
+    return detallePartido.value;
+  } catch (error) {
+    console.error("Error al obtener la cronología:", error);
+  }
+};
+
+//Estado arbitro
+const mostrarModalArbitro = ref(false);
+const cerrarModalArbitro = () => {
+  mostrarModalArbitro.value = false;
+};
+const procesarExitoArbitro = () => {
+  mostrarModalArbitro.value = false;
+  fetchCronologia();
+};
+const catalogoGestion = ref([]);
+const fetchCatalogoGestion = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8080/api/incidencias/catalogo-gestion",
+    );
+    const data = response.data;
+    catalogoGestion.value = data;
+    return catalogoGestion.value;
+  } catch (error) {
+    console.error("Error al obtener el catálogo de gestión:", error);
+  }
+};
+const abrirModal = (jugadorRecibido) => {
+  jugadorParaIncidencia.value = jugadorRecibido;
+  mostrarModal.value = true;
+};
+
+// ... (resto de funciones de cierre y éxito)
 </script>
 
 <template>

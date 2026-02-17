@@ -42,7 +42,7 @@ const manejarClickIncidencia = (jugador) => {
 
 <template>
   <div class="overflow-x-auto mt-5 border border-slate-200 rounded-lg">
-    <table class="w-full text-left border-collapse">
+    <table class="w-full text-left border-collapse" :class="!estadoPartido ? 'pointer-events-none opacity-80' : ''">
       <thead>
         <tr class="border-b border-slate-200 bg-slate-100">
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 w-16 text-center">#</th>
@@ -69,6 +69,7 @@ const manejarClickIncidencia = (jugador) => {
           <td class="py-4 px-6 text-blue-700 font-black text-center text-lg">
             {{ jugador.numeroCamiseta || (index + 1) }}
           </td>
+
           <td class="py-4 px-6">
             <div class="flex items-center gap-3">
               <div
@@ -81,6 +82,7 @@ const manejarClickIncidencia = (jugador) => {
               </div>
             </div>
           </td>
+
           <td class="py-4 px-6">
             <span
               class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border border-slate-200 bg-white text-slate-600">
@@ -93,6 +95,7 @@ const manejarClickIncidencia = (jugador) => {
               <span class="material-symbols-outlined text-sm">edit_note</span>
               Incidencia
             </button>
+            <span v-else class="text-xs text-slate-400 italic">Lectura</span>
           </td>
         </tr>
 
