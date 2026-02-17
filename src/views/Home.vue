@@ -83,7 +83,7 @@ const pagination = ref({
 });
 const traerArbitro = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/api/arbitros/autenticado", {
+    const response = await axios.get("http://localhost:8080/api/personas/autenticado", {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },

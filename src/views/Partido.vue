@@ -34,6 +34,7 @@ const {
 } = useMatchData(idPartido);
 
 onMounted(() => {
+
   initData();
 });
 
@@ -110,10 +111,10 @@ const equipoSeleccionado = computed(() => {
   </main>
 
   <Teleport to="body">
-    <ModalIncidencia v-if="mostrarModal" :jugador="jugadorParaIncidencia" :partidoId="partido.partido?.id"
+    <ModalIncidencia v-if="mostrarModal" :jugador="jugadorParaIncidencia" :partidoId="partido?.idPartido"
       :equipo="equipoSeleccionado" @close="cerrarModal" @success="procesarExito" />
 
-    <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido.partido?.id"
+    <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido?.idPartido"
       :catalogoGestion="catalogoGestion" @close="cerrarModalArbitro" @success="procesarExitoArbitro" />
   </Teleport>
 </template>

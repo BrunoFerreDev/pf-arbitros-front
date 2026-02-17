@@ -24,6 +24,8 @@ export function useMatchData(idPartido) {
     partido.value = data;
     clubLocal.value = data.clubLocal;
     clubVisita.value = data.clubVisitante;
+    console.log(partido.value);
+    
     return data;
   };
 

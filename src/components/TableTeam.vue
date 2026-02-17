@@ -48,7 +48,7 @@ const manejarClickIncidencia = (jugador) => {
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 w-16 text-center">#</th>
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600">Jugador</th>
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600">DNI</th>
-          <th v-if="estadoPartido"
+          <th
             class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 text-right">Acciones</th>
         </tr>
       </thead>

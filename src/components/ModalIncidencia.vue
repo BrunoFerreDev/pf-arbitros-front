@@ -190,7 +190,7 @@ const guardarIncidencia = async () => {
   errores.value = null;
 
   try {
-    const url = `http://localhost:8080/api/incidencias/${props.partidoId}/cargar-incidencia`;
+    const url = `http://localhost:8080/api/arbitros/partido/${props.partidoId}/cargar-incidencia`;
 
     if (form.tipoIncidencia === "CAMBIO") {
       if (!form.jugadorEntrante) throw new Error("Seleccione quién ingresa.");
@@ -234,5 +234,8 @@ watch(() => form.tipoIncidencia, () => {
   errores.value = null;
 });
 
-onMounted(fetchIncidenciasDisponibles);
+onMounted(() => {
+  fetchIncidenciasDisponibles();
+  console.log(props.partidoId);
+});
 </script>
