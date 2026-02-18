@@ -90,6 +90,7 @@ const traerArbitro = async () => {
     });
     const data = response.data;
     arbitro.value = data;
+    localStorage.setItem("arbitro", JSON.stringify(data));
     traerPartidos();
   } catch (error) {
     console.error("Error al obtener el arbitro:", error);
