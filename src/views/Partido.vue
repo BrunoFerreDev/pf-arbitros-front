@@ -15,6 +15,8 @@ import ModalIncidencia from '../components/ModalIncidencia.vue';
 import ModalIncidenciaArbitro from '../components/ModalIncidenciaArbitro.vue';
 import Cronologia from '../components/Cronologia.vue';
 import ResultHead from '../components/ResultHead.vue';
+import ModalMessage from '../components/ModalMessage.vue';
+import axios from 'axios';
 
 const router = useRouter();
 const idPartido = router.currentRoute.value.params.idPartido;
@@ -65,6 +67,7 @@ const procesarExitoArbitro = () => {
   mostrarModalArbitro.value = false;
   fetchCronologia();
 };
+const showModal = ref(false);
 
 // --- CORRECCIÓN LÓGICA IMPORTANTE ---
 // En tu código original, usabas clubLocal.value dentro del computed, pero clubLocal no existía como ref.
@@ -80,10 +83,32 @@ const equipoSeleccionado = computed(() => {
 
   return esLocal ? partido.value.clubLocal : partido.value.clubVisita;
 });
+const finalizarInforme = async () => {
+  console.log(partido.value.idPartido);
+
+  try {
+    const response = await axios.post('http://localhost:8080/api/arbitros/partido/finalizar-informe?idPartido=' + partido.value.idPartido, null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    console.log(response);
+    showModal.value = false;
+    location.reload()
+  }
+  catch (error) {
+    console.log(error);
+  }
+}
+const descargarInforme = () => {
+  console.log("Descargar Informe");
+}
+
 </script>
 
 <template>
-  <MatchHeader />
+  <MatchHeader :estadoPartido="partido.estado" @finalizarInforme="showModal = true"
+    @descargarInforme="descargarInforme" />
 
   <div v-if="cargando" class="h-80 flex flex-col gap-3 items-center justify-center">
     <IconLoader class="animate-spin text-[#607AFB]" />
@@ -116,5 +141,10 @@ const equipoSeleccionado = computed(() => {
 
     <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido?.idPartido"
       :catalogoGestion="catalogoGestion" @close="cerrarModalArbitro" @success="procesarExitoArbitro" />
+    <div class="z-50 fixed inset-0 bg-black/50 flex items-center justify-center p-4 " v-if="showModal">
+      <ModalMessage :showModal="showModal" @closeModal="finalizarInforme" titulo="¿Desea finalizar el informe?"
+        :showButton="true" mensaje="No podrá modificar el informe una vez finalizado" errorIcon="warning"
+        type="warning" />
+    </div>
   </Teleport>
 </template>

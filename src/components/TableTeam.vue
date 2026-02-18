@@ -48,8 +48,7 @@ const manejarClickIncidencia = (jugador) => {
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 w-16 text-center">#</th>
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600">Jugador</th>
           <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600">DNI</th>
-          <th
-            class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 text-right">Acciones</th>
+          <th class="py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 text-right">Acciones</th>
         </tr>
       </thead>
 
@@ -88,12 +87,17 @@ const manejarClickIncidencia = (jugador) => {
             </span>
           </td>
           <td class="py-4 px-6 text-right">
-            <button @click="manejarClickIncidencia(jugador)"
+            <button @click="manejarClickIncidencia(jugador)" v-if="props.estadoPartido"
               class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm">
               <span class="material-symbols-outlined text-sm">edit_note</span>
               Incidencia
             </button>
+            <span v-else
+              class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm ">
+              No permitidas
+            </span>
           </td>
+
         </tr>
 
         <template v-if="suplentes.length > 0">
@@ -124,12 +128,16 @@ const manejarClickIncidencia = (jugador) => {
             <td class="py-3 px-6 text-slate-500 text-sm">
               {{ formatDNI(jugador.dni) }}
             </td>
-            <td  class="py-3 px-6 text-right">
-              <button @click.prevent="manejarClickIncidencia(jugador)"
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition-all">
+            <td class="py-4 px-6 text-right">
+              <button @click="manejarClickIncidencia(jugador)" v-if="props.estadoPartido"
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm">
                 <span class="material-symbols-outlined text-sm">edit_note</span>
                 Incidencia
               </button>
+              <span v-else
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm ">
+                No permitidas
+              </span>
             </td>
           </tr>
         </template>

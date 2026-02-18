@@ -23,11 +23,11 @@
             Próximos
           </button>
           <button @click="() => {
-            estadoPartido = 'PENDIENTE'
+            estadoPartido = 'ABIERTO'
             pagination.page = 0;
             traerPartidos();
           }"
-            :class="estadoPartido === 'PENDIENTE' ? 'border-[#359EFF] text-[#359EFF]' : 'border-transparent text-slate-500'"
+            :class="estadoPartido === 'ABIERTO' ? 'border-[#359EFF] text-[#359EFF]' : 'border-transparent text-slate-500'"
             class="w-full md:w-auto border-b-2 pb-4 px-1 text-sm font-bold flex items-center gap-2">Pendientes
             de Revisión
           </button>
@@ -47,9 +47,9 @@
             <p v-else>No hay partidos {{ estadoPartido === 'PROGRAMADO' ? 'próximos' : estadoPartido === 'FINALIZADO' ?
               'finalizados' : 'pendientes de revisión' }}</p>
           </div>
-          <Pagination v-if="partidos.length > 0" :page="pagination.page" :totalPages="pagination.totalPages"
-            :totalElements="pagination.totalElements" :size="pagination.size" @page-change="handlePageChange" />
         </section>
+        <Pagination v-if="partidos.length > 0" :page="pagination.page" :totalPages="pagination.totalPages"
+          :totalElements="pagination.totalElements" :size="pagination.size" @page-change="handlePageChange" />
 
         <StatsRefeere :stats="{
           partidosEstaTemporada: pagination.totalElements,
@@ -134,8 +134,8 @@ const handlePageChange = (newPage) => {
 <style scoped>
 .next-match-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-  margin: 0 auto;
+  grid-template-columns: repeat(auto-fill, 280px);
+  justify-content: space-around;
+  gap: 1.5rem;
 }
 </style>

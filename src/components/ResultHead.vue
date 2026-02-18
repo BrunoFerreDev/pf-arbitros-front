@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed } from "vue";
 
 // Definimos las props. Necesitamos 'partido' para saber el ID del club local.
 const props = defineProps({
@@ -44,9 +44,7 @@ const props = defineProps({
     required: true,
   },
 });
-onMounted(() => {
-  console.log(props.detallePartido);
-});
+
 // Usamos computed: Vue recalcula esto automáticamente si cambian los props
 const marcador = computed(() => {
   let golesLocal = 0;

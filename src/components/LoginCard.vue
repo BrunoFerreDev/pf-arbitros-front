@@ -9,7 +9,8 @@ const router = useRouter();
 const showModal = ref(false)
 const tituloError = ref('')
 const mensajeError = ref('')
-
+const showButton = ref(true)
+const errorIcon = ref('')
 // Estado del formulario
 const form = ref({
     email: '',
@@ -25,13 +26,23 @@ const login = async () => {
         console.log(response.data);
         if (response.data.jwt && response.data.status) {
             localStorage.setItem('token', response.data.jwt);
-            router.push('/dashboard');
+            mensajeError.value = 'Inicio de sesión exitoso';
+            tituloError.value = 'Éxito';
+            showModal.value = true;
+            showButton.value = false
+            errorIcon.value = 'check_circle'
+            setTimeout(() => {
+                showModal.value = false;
+                router.push('/dashboard');
+            }, 2000);
         }
     } catch (error) {
         console.error(error);
         mensajeError.value = 'Credenciales incorrectas, por favor intente nuevamente';
         tituloError.value = 'Error';
         showModal.value = true
+        errorIcon.value = 'error'
+        showButton.value = true
     }
 }
 
@@ -40,6 +51,7 @@ const handleSubmit = () => {
         mensajeError.value = 'Por favor, complete todos los campos';
         tituloError.value = 'Error';
         showModal.value = true;
+        errorIcon.value = 'error'
     } else {
         login()
     }
@@ -104,7 +116,7 @@ const handleSubmit = () => {
         </p>
     </div>
     <div class="z-50 fixed inset-0 bg-black/50 flex items-center justify-center p-4 " v-if="showModal">
-        <ModalMessage :showModal="showModal" @closeModal="showModal = false" :titulo="tituloError"
-            :mensaje="mensajeError" />
+        <ModalMessage :showModal="showModal" @closeModal="showModal = false" :titulo="tituloError" 
+            :showButton="showButton" :mensaje="mensajeError" :errorIcon="errorIcon"/>
     </div>
 </template>

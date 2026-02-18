@@ -60,7 +60,7 @@
             <p class="text-sm font-bold text-gray-700 break-all">{{ arbitro.telefono }}</p>
           </div>
         </div>
-        <button
+        <button @click="showModal = true"
           class="w-full py-3 px-4 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-[18px]">logout</span>
           Cerrar Sesión
@@ -68,10 +68,24 @@
       </div>
     </div>
   </aside>
+  <div v-if="showModal"
+    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4 transition-all">
+
+    <div class="absolute inset-0" @click="showModal = false"></div>
+
+    <div class="relative z-10">
+      <ModalLogout :showModalLogout="showModal" @closeModalLogout="showModal = false" />
+    </div>
+  </div>
 </template>
 <script setup>
+import { ref } from 'vue';
+import ModalLogout from './ModalLogout.vue';
+
 const props = defineProps({
   arbitro: Object,
   required: true
 })
+
+const showModal = ref(false);
 </script>

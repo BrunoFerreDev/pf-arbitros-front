@@ -24,8 +24,6 @@ export function useMatchData(idPartido) {
     partido.value = data;
     clubLocal.value = data.clubLocal;
     clubVisita.value = data.clubVisitante;
-    console.log(partido.value);
-    
     return data;
   };
 
@@ -36,8 +34,6 @@ export function useMatchData(idPartido) {
     });
     jugadoresLocal.value = data.clubLocal.jugadores || [];
     jugadoresVisitante.value = data.clubVisita.jugadores || [];
-    console.log(jugadoresLocal.value);
-    
   };
 
   const fetchCronologia = async () => {

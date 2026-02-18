@@ -3,8 +3,9 @@
         class="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 ease-in">
         <div class="p-8 flex flex-col items-center text-center">
             <!-- Icon Header -->
-            <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
-                <span class="material-symbols-outlined !text-4xl">error</span>
+            <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-full"
+                :class="errorIcon === 'error' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'">
+                <span class="material-symbols-outlined !text-4xl">{{ errorIcon }}</span>
             </div>
             <!-- Title -->
             <h2 class="text-2xl font-bold text-[#111218] mb-2">{{ titulo }}</h2>
@@ -14,10 +15,15 @@
             </p>
             <!-- Actions -->
             <div class="flex flex-col-reverse sm:flex-row w-full gap-3">
-                <button @click="closeModal"
+                <button @click="closeModal" v-if="showButton"
                     class="flex-1 px-6 py-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-[#111218] font-bold text-base transition-colors duration-200">
                     Ok
                 </button>
+                <span v-else
+                    class="flex-1 px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-[#111218] font-bold text-base transition-colors duration-200">
+                    <IconLoader class="animate-spin text-[#607AFB]" />
+                    Cargando...
+                </span>
             </div>
         </div>
         <!-- Footer Decoration (Optional subtle football-themed pattern) -->
@@ -25,9 +31,13 @@
     </div>
 </template>
 <script setup>
+import { IconLoader } from '@tabler/icons-vue';
+
 defineProps({
     titulo: String,
-    mensaje: String
+    mensaje: String,
+    showButton: Boolean,
+    errorIcon: String
 })
 const emit = defineEmits(['closeModal']);
 const closeModal = () => {
