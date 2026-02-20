@@ -15,9 +15,10 @@ const props = defineProps({
 </script>
 
 <template>
-  <div class="flex items-center gap-6 flex-1" :class="isLocal ? 'justify-start' : 'justify-end flex-row-reverse text-right'">
+  <div class="flex items-center gap-6 flex-1"
+    :class="isLocal ? 'justify-start' : 'justify-end flex-row-reverse text-right'">
     <div class="size-14 rounded-full bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
-      <IconShield class="text-slate-400" :size="30" stroke-width="1.5" />
+      <img :src="equipo?.escudo" alt="Escudo del equipo" class="w-full h-full object-contain rounded-lg">
     </div>
 
     <div>

@@ -36,7 +36,6 @@ const {
 } = useMatchData(idPartido);
 
 onMounted(() => {
-
   initData();
 });
 

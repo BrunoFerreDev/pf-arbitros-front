@@ -9,7 +9,7 @@
               fill="currentColor" fill-rule="evenodd"></path>
           </svg>
         </div>
-        <h2 class="text-lg font-bold tracking-tight">Referee Pro Admin</h2>
+        <h2 class="text-lg font-bold tracking-tight">Liga Regional de Puerto Rico</h2>
       </div>
       <h4 class="text-md font-medium text-slate-800">Panel de Información del Partido</h4>
       <div class="flex items-center gap-4">
