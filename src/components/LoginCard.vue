@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import BaseInput from './BaseInput.vue';
 import ModalMessage from '@/components/ModalMessage.vue';
-import axios from 'axios';
+import { useAuth } from '../hooks/useAuth';
 
 const router = useRouter();
 const showModal = ref(false)
@@ -11,38 +11,35 @@ const tituloError = ref('')
 const mensajeError = ref('')
 const showButton = ref(true)
 const errorIcon = ref('')
+
 // Estado del formulario
 const form = ref({
     email: '',
     password: '',
 });
 
+const { login: authLogin } = useAuth();
+
 const login = async () => {
     try {
-        const response = await axios.post('http://localhost:8080/api/auth/login', {
-            dni: form.value.password,
-            email: form.value.email,
-        });
-        console.log(response.data);
-        if (response.data.jwt && response.data.status) {
-            localStorage.setItem('token', response.data.jwt);
-            mensajeError.value = 'Inicio de sesión exitoso';
-            tituloError.value = 'Éxito';
-            showModal.value = true;
-            showButton.value = false
-            errorIcon.value = 'check_circle'
-            setTimeout(() => {
-                showModal.value = false;
-                router.push('/dashboard');
-            }, 2000);
-        }
+        const data = await authLogin(form.value.email, form.value.password);
+        console.log(data);
+        mensajeError.value = 'Inicio de sesión exitoso';
+        tituloError.value = 'Éxito';
+        showModal.value = true;
+        showButton.value = false;
+        errorIcon.value = 'check_circle';
+        setTimeout(() => {
+            showModal.value = false;
+            router.push('/dashboard');
+        }, 2000);
     } catch (error) {
         console.error(error);
         mensajeError.value = 'Credenciales incorrectas, por favor intente nuevamente';
         tituloError.value = 'Error';
-        showModal.value = true
-        errorIcon.value = 'error'
-        showButton.value = true
+        showModal.value = true;
+        errorIcon.value = 'error';
+        showButton.value = true;
     }
 }
 
@@ -51,7 +48,7 @@ const handleSubmit = () => {
         mensajeError.value = 'Por favor, complete todos los campos';
         tituloError.value = 'Error';
         showModal.value = true;
-        errorIcon.value = 'error'
+        errorIcon.value = 'error';
     } else {
         login()
     }

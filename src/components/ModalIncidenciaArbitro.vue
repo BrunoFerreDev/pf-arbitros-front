@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import axios from "axios";
+import api from "../services/api";
 import { ref, reactive, onMounted } from "vue";
 
 const props = defineProps({
@@ -109,8 +109,8 @@ const confirmar = async () => {
   loading.value = true;
   try {
     console.log(form);
-    const response = await axios.post(
-      "http://localhost:8080/api/arbitros/partido/cargar-incidencia-gestion",
+    const response = await api.post(
+      "/arbitros/partido/cargar-incidencia-gestion",
       {
         idPartido: props.partidoId,
         idIncidencia: form.idIncidencia,
@@ -118,16 +118,10 @@ const confirmar = async () => {
         tipo: form.tipo,
         observacion: form.observacion,
         minuto: form.minuto,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + localStorage.getItem("token")
-        },
-      },
+      }
     );
 
-    if (response.status === 200) {
+    if (response) {
       emit("success");
       cerrar();
       location.reload();

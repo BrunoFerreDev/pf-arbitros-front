@@ -1,6 +1,6 @@
 // composables/useMatchData.js
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '../services/api';
 
 export function useMatchData(idPartido) {
   const cargando = ref(true);
@@ -13,14 +13,9 @@ export function useMatchData(idPartido) {
   const catalogoGestion = ref([]);
   const incidencias = ref([]); // Si las necesitas para algo interno
 
-  // Helper para headers
-  const getAuthHeader = () => ({
-    headers: { "Authorization": "Bearer " + localStorage.getItem("token") }
-  });
-
   // --- API CALLS ---
   const fetchPartidoBase = async () => {
-    const { data } = await axios.get(`http://localhost:8080/api/partidos/${idPartido}`, getAuthHeader());
+    const { data } = await api.get(`/partidos/${idPartido}`);
     partido.value = data;
     clubLocal.value = data.clubLocal;
     clubVisita.value = data.clubVisitante;
@@ -28,8 +23,7 @@ export function useMatchData(idPartido) {
   };
 
   const fetchJugadores = async () => {
-    const { data } = await axios.get(`http://localhost:8080/api/partidos/obtener-jugadores`, {
-      ...getAuthHeader(),
+    const { data } = await api.get(`/partidos/obtener-jugadores`, {
       params: { idPartido, categoria: "PRIMERA" },
     });
     jugadoresLocal.value = data.clubLocal.jugadores || [];
@@ -37,21 +31,19 @@ export function useMatchData(idPartido) {
   };
 
   const fetchCronologia = async () => {
-    const { data } = await axios.get(`http://localhost:8080/api/partidos/${idPartido}/traer-detalles`, getAuthHeader());
+    const { data } = await api.get(`/partidos/${idPartido}/traer-detalles`);
     data.sort((a, b) => b.incidencia.minuto - a.incidencia.minuto);
     cronologia.value = data;
   };
 
   const fetchCatalogoGestion = async () => {
-    const { data } = await axios.get("http://localhost:8080/api/incidencias/catalogo-gestion", getAuthHeader());
+    const { data } = await api.get("/incidencias/catalogo-gestion");
     catalogoGestion.value = data;
   };
 
   const fetchIncidenciasDisponibles = async () => {
-     const { data } = await axios.get("http://localhost:8080/api/incidencias/obtener-disponibles", getAuthHeader());
+     const { data } = await api.get("/incidencias/obtener-disponibles");
      incidencias.value = data;
-     // Nota: He removido los filtros de goles/tarjetas aquí porque no se usaban en tu template original.
-     // Si los necesitas, puedes agregar computed properties que retornen incidencias.value.filter(...)
   };
 
   // --- FUNCIÓN PRINCIPAL ---

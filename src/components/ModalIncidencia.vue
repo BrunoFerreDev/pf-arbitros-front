@@ -108,7 +108,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from "vue";
-import axios from "axios";
+import api from '../services/api';
 
 const props = defineProps({
   jugador: { type: Object, required: true },
@@ -167,12 +167,8 @@ const formatDNI = (dni) => {
 
 const fetchIncidenciasDisponibles = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/api/incidencias/obtener-disponibles", {
-      headers: {
-        "Authorization": "Bearer " + localStorage.getItem("token")
-      }
-    });
-    incidenciasDisponibles.value = response.data;
+    const { data } = await api.get("/incidencias/obtener-disponibles");
+    incidenciasDisponibles.value = data;
   } catch (error) {
     errores.value = "Error al cargar catálogo de incidencias.";
   }
@@ -190,7 +186,7 @@ const guardarIncidencia = async () => {
   errores.value = null;
 
   try {
-    const url = `http://localhost:8080/api/arbitros/partido/${props.partidoId}/cargar-incidencia`;
+    const url = `/arbitros/partido/${props.partidoId}/cargar-incidencia`;
 
     if (form.tipoIncidencia === "CAMBIO") {
       if (!form.jugadorEntrante) throw new Error("Seleccione quién ingresa.");
@@ -199,21 +195,17 @@ const guardarIncidencia = async () => {
       const motEntrada = incidenciasDisponibles.value.find(i => i.tipo === "SUSTITUCION_INGRESA");
 
       await Promise.all([
-        axios.post(url, { idIncidencia: motSalida.idIncidencia, minuto: form.minuto, idPersona: props.jugador.idPersona }),
-        axios.post(url, { idIncidencia: motEntrada.idIncidencia, minuto: form.minuto, idPersona: form.jugadorEntrante })
+        api.post(url, { idIncidencia: motSalida.idIncidencia, minuto: form.minuto, idPersona: props.jugador.idPersona }),
+        api.post(url, { idIncidencia: motEntrada.idIncidencia, minuto: form.minuto, idPersona: form.jugadorEntrante })
       ]);
     } else {
       if (!form.idIncidenciaCatalogo) throw new Error("Seleccione el motivo.");
 
-      await axios.post(url, {
+      await api.post(url, {
         idIncidencia: form.idIncidenciaCatalogo,
         minuto: form.minuto,
         idPersona: props.jugador.idPersona,
         observacion: form.descripcion
-      }, {
-        headers: {
-          "Authorization": "Bearer " + localStorage.getItem("token")
-        }
       });
     }
 

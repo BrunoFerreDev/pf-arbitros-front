@@ -16,7 +16,6 @@ import ModalIncidenciaArbitro from '../components/ModalIncidenciaArbitro.vue';
 import Cronologia from '../components/Cronologia.vue';
 import ResultHead from '../components/ResultHead.vue';
 import ModalMessage from '../components/ModalMessage.vue';
-import axios from 'axios';
 
 const router = useRouter();
 const idPartido = router.currentRoute.value.params.idPartido;
@@ -82,18 +81,18 @@ const equipoSeleccionado = computed(() => {
 
   return esLocal ? partido.value.clubLocal : partido.value.clubVisita;
 });
+
+import { useArbitros } from '../hooks/useArbitros.js';
+const { finalizarInforme: apiFinalizarInforme } = useArbitros();
+
 const finalizarInforme = async () => {
   console.log(partido.value.idPartido);
 
   try {
-    const response = await axios.post('http://localhost:8080/api/arbitros/partido/finalizar-informe?idPartido=' + partido.value.idPartido, null, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    console.log(response);
+    const data = await apiFinalizarInforme(partido.value.idPartido);
+    console.log(data);
     showModal.value = false;
-    location.reload()
+    location.reload();
   }
   catch (error) {
     console.log(error);

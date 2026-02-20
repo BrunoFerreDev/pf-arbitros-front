@@ -71,7 +71,9 @@ import Pagination from "../components/Pagination.vue";
 import StatsRefeere from "../components/StatsRefeere.vue";
 import Footer from "../components/Footer.vue";
 import { computed, onMounted, ref, watch } from "vue";
-import axios from "axios";
+import { useAuth } from "../hooks/useAuth";
+import { useArbitros } from "../hooks/useArbitros";
+
 const arbitro = ref({});
 const partidos = ref([]);
 const estadoPartido = ref("FINALIZADO")
@@ -81,54 +83,49 @@ const pagination = ref({
   totalPages: 0,
   totalElements: 0,
 });
+
+const { fetchAuthenticatedUser } = useAuth();
+const { buscarDesignaciones } = useArbitros();
+
 const traerArbitro = async () => {
   try {
-    const response = await axios.get("http://localhost:8080/api/personas/autenticado", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    const data = response.data;
+    const data = await fetchAuthenticatedUser();
     arbitro.value = data;
-    localStorage.setItem("arbitro", JSON.stringify(data));
     traerPartidos();
   } catch (error) {
     console.error("Error al obtener el arbitro:", error);
   }
 }
+
 const traerPartidos = async () => {
+  if (!arbitro.value.idPersona) return; // Wait until referee is loaded
   try {
-    const response = await axios.get("http://localhost:8080/api/arbitros/buscar-designaciones", {
-      params: {
-        idArbitro: arbitro.value.idPersona,
-        estado: estadoPartido.value,
-        page: pagination.value.page,
-        size: pagination.value.size,
-      },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    const data = response.data;
+    const data = await buscarDesignaciones(
+      arbitro.value.idPersona,
+      estadoPartido.value,
+      pagination.value.page,
+      pagination.value.size
+    );
     partidos.value = data.content;
     pagination.value.totalPages = data.totalPages;
     pagination.value.totalElements = data.totalElements;
     console.log(data);
-
   } catch (error) {
-    console.error("Error al obtener el arbitro:", error);
+    console.error("Error al obtener partidos:", error);
   }
 }
+
 onMounted(() => {
   traerArbitro();
 });
+
 watch([() => pagination.value.page, () => pagination.value.size], () => {
   traerPartidos();
 });
 
 // --- EVENTOS ---
 const handlePageChange = (newPage) => {
-  // Solo actualizamos el valor, el watcher detectará el cambio y llamará a fetchArbitros
+  // Solo actualizamos el valor, el watcher detectará el cambio y llamará a traerPartidos
   pagination.value.page = newPage;
 };
 </script>

@@ -42,8 +42,8 @@
 
 <script setup>
 import { IconChevronUp, IconChevronDown } from "@tabler/icons-vue";
-import axios from "axios";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
+import { useIncidencias } from "../hooks/useIncidencias";
 
 const props = defineProps({
   incidencia: {
@@ -61,21 +61,15 @@ const props = defineProps({
 });
 
 const clubData = ref(null);
+const { fetchClubInfo } = useIncidencias();
 
 const fetchClub = async () => {
   // Si no hay ID de club (ej. es un árbitro), no hacemos la petición
   if (!props.club) return;
 
   try {
-    const response = await axios.get(`http://localhost:8080/api/club/informacion`, {
-      params: {
-        idClub: props.club
-      },
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    clubData.value = response.data;
+    const data = await fetchClubInfo(props.club);
+    clubData.value = data;
   } catch (error) {
     console.error("Error al obtener información del club:", error);
   }

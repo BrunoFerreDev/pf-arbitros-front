@@ -30,10 +30,9 @@
     </div>
 </template>
 <script setup>
-import axios from 'axios';
+import { useAuth } from '../hooks/useAuth';
 
 const props = defineProps({
-    // No props needed for this modal
     showModalLogout: {
         type: Boolean,
         default: false
@@ -43,27 +42,18 @@ const emit = defineEmits(['closeModalLogout']);
 const closeModalLogout = () => {
     emit('closeModalLogout');
 }
+
+const { logout: authLogout } = useAuth();
+
 const logout = async () => {
     try {
-        const token = localStorage.getItem('token');
-
-        // El segundo parámetro es el BODY (vacío en este caso)
-        // El tercer parámetro es el objeto de CONFIGURACIÓN
-        const response = await axios.post('http://localhost:8080/api/auth/logout', {}, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        console.log('Respuesta del servidor:', response.data);
-
-        // Limpiar localstorage y redirigir
-        localStorage.removeItem('token');
+        await authLogout();
+        // Redirigir siempre, incluso si falla remotamente
         location.href = '/';
-
     } catch (error) {
         console.error('Error al cerrar sesión:', error);
-        // Incluso si falla el servidor, limpia el localstorage por seguridad
         localStorage.removeItem('token');
+        location.href = '/';
     }
-}</script>
+}
+</script>
