@@ -7,7 +7,9 @@ const props = defineProps({
   clubVisita: { type: Object, required: true },
   partido: { type: Object, required: true }, // Objeto completo del partido
   jugadoresLocal: { type: Array, default: () => [] },
-  jugadoresVisitante: { type: Array, default: () => [] }
+  jugadoresVisitante: { type: Array, default: () => [] },
+  cuerpoTecnicoLocal: { type: Array, default: () => [] },
+  cuerpoTecnicoVisitante: { type: Array, default: () => [] }
 });
 const emit = defineEmits(['abrir-modal']);
 
@@ -44,11 +46,11 @@ const isEditable = computed(() => {
     </div>
 
     <div class="p-4 overflow-auto">
-      <TableTeam v-if="activeTab === 'local'" :jugadores="jugadoresLocal" :estadoPartido="isEditable"
-        @abrir-modal="(j) => emit('abrir-modal', j)" />
+      <TableTeam v-if="activeTab === 'local'" :jugadores="jugadoresLocal.sort((a, b) => a.nroCamiseta - b.nroCamiseta)" :estadoPartido="isEditable"
+        :cuerpoTecnico="cuerpoTecnicoLocal" @abrir-modal="(j) => emit('abrir-modal', j)" />
 
-      <TableTeam v-else :jugadores="jugadoresVisitante" :estadoPartido="isEditable"
-        @abrir-modal="(j) => emit('abrir-modal', j)" />
+      <TableTeam v-else :jugadores="jugadoresVisitante.sort((a, b) => a.nroCamiseta - b.nroCamiseta)" :estadoPartido="isEditable"
+        :cuerpoTecnico="cuerpoTecnicoVisitante" @abrir-modal="(j) => emit('abrir-modal', j)" />
     </div>
   </div>
 </template>

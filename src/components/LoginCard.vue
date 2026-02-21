@@ -23,7 +23,6 @@ const { login: authLogin } = useAuth();
 const login = async () => {
     try {
         const data = await authLogin(form.value.email, form.value.password);
-        console.log(data);
         mensajeError.value = 'Inicio de sesión exitoso';
         tituloError.value = 'Éxito';
         showModal.value = true;

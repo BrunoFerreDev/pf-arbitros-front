@@ -11,23 +11,21 @@ const props = defineProps({
   estadoPartido: {
     type: Boolean,
     default: true
+  },
+  cuerpoTecnico: {
+    type: Array,
+    default: () => []
   }
 });
 
 const emit = defineEmits(["abrir-modal"]);
 
-// 2. LÓGICA DE SEPARACIÓN
-// Opción A: Si tu BD tiene un campo booleano 'esTitular' (Recomendado)
 const titulares = computed(() => {
-  //return props.jugadores.filter(j => j.esTitular === true);
-  // SI NO TIENES EL CAMPO 'esTitular', usa esta línea para tomar los primeros 11:
-  return props.jugadores.slice(0, 11);
+  return props.jugadores.filter(j => j.rol === 'TITULAR');
 });
 
 const suplentes = computed(() => {
-  //return props.jugadores.filter(j => j.esTitular !== true);
-  // SI NO TIENES EL CAMPO 'esTitular', usa esta línea para tomar del 12 en adelante:
-  return props.jugadores.slice(11);
+  return props.jugadores.filter(j => j.rol === 'SUPLENTE');
 });
 
 const formatDNI = (dni) => {
@@ -66,7 +64,7 @@ const manejarClickIncidencia = (jugador) => {
         <tr v-for="(jugador, index) in titulares" :key="jugador.idPersona || index"
           class="hover:bg-slate-50 transition-colors group">
           <td class="py-4 px-6 text-blue-700 font-black text-center text-lg">
-            {{ jugador.numeroCamiseta || (index + 1) }}
+            {{ jugador.nroCamiseta }}
           </td>
           <td class="py-4 px-6">
             <div class="flex items-center gap-3">
@@ -75,8 +73,7 @@ const manejarClickIncidencia = (jugador) => {
                 :style="{ backgroundImage: `url(${jugador.foto || 'https://via.placeholder.com/150'})` }">
               </div>
               <div>
-                <p class="font-bold text-slate-900 text-sm uppercase leading-tight">{{ jugador.apellido }}</p>
-                <p class="text-xs text-slate-500">{{ jugador.nombre }}</p>
+                <p class="font-bold text-slate-900 text-sm uppercase leading-tight">{{ jugador.nombreJugador }}</p>
               </div>
             </div>
           </td>
@@ -111,7 +108,7 @@ const manejarClickIncidencia = (jugador) => {
           <tr v-for="(jugador, index) in suplentes" :key="jugador.idPersona || index"
             class="hover:bg-slate-50 transition-colors opacity-90 group">
             <td class="py-3 px-6 text-slate-400 font-bold text-center text-md">
-              {{ jugador.numeroCamiseta || (12 + index) }}
+              {{ jugador.nroCamiseta }}
             </td>
             <td class="py-3 px-6">
               <div class="flex items-center gap-3">
@@ -120,8 +117,7 @@ const manejarClickIncidencia = (jugador) => {
                   :style="{ backgroundImage: `url(${jugador.foto || 'https://via.placeholder.com/150'})` }">
                 </div>
                 <div>
-                  <p class="font-medium text-slate-700 text-sm uppercase">{{ jugador.apellido }}</p>
-                  <p class="text-[10px] text-slate-400">{{ jugador.nombre }}</p>
+                  <p class="font-medium text-slate-700 text-sm uppercase">{{ jugador.nombreJugador }}</p>
                 </div>
               </div>
             </td>
@@ -130,6 +126,46 @@ const manejarClickIncidencia = (jugador) => {
             </td>
             <td class="py-4 px-6 text-right">
               <button @click="manejarClickIncidencia(jugador)" v-if="props.estadoPartido"
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-sm">edit_note</span>
+                Incidencia
+              </button>
+              <span v-else
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm ">
+                No permitidas
+              </span>
+            </td>
+          </tr>
+        </template>
+        <template v-if="cuerpoTecnico.length > 0">
+          <tr class="bg-slate-50">
+            <td colspan="4"
+              class="px-6 py-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest border-t border-slate-200">
+              Cuerpo Técnico
+            </td>
+          </tr>
+
+          <tr v-for="(ct, index) in cuerpoTecnico" :key="ct.idPersona || index"
+          class="hover:bg-slate-50 transition-colors group">
+            <td class="py-3 px-6 font-bold text-left capitalize text-xs">
+              {{ ct.cargo.replace('_', ' ') }}
+            </td>
+            <td class="py-3 px-6">
+              <div class="flex items-center gap-3">
+                <div
+                  class="size-9 rounded-full bg-slate-200 bg-cover bg-center shrink-0 border border-slate-200 grayscale-[0.3]"
+                  :style="{ backgroundImage: `url(${ct.foto || 'https://via.placeholder.com/150'})` }">
+                </div>
+                <div>
+                  <p class="font-bold text-slate-900 text-sm uppercase leading-tight">{{ ct.nombreIntegrante }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="py-3 px-6 text-slate-500 text-sm">
+              {{ formatDNI(ct.dni) }}
+            </td>
+            <td class="py-4 px-6 text-right">
+              <button @click="manejarClickIncidencia(ct)" v-if="props.estadoPartido"
                 class="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 hover:border-blue-400 transition-all shadow-sm">
                 <span class="material-symbols-outlined text-sm">edit_note</span>
                 Incidencia

@@ -109,7 +109,6 @@ const traerPartidos = async () => {
     partidos.value = data.content;
     pagination.value.totalPages = data.totalPages;
     pagination.value.totalElements = data.totalElements;
-    console.log(data);
   } catch (error) {
     console.error("Error al obtener partidos:", error);
   }

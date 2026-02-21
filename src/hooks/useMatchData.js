@@ -1,12 +1,12 @@
 // composables/useMatchData.js
-import { ref } from 'vue';
-import api from '../services/api';
+import { ref } from "vue";
+import api from "../services/api";
 
 export function useMatchData(idPartido) {
   const cargando = ref(true);
   const partido = ref({});
-  const jugadoresLocal = ref([]);
-  const jugadoresVisitante = ref([]);
+  const planillaLocal = ref([]);
+  const planillaVisitante = ref([]);
   const clubLocal = ref({});
   const clubVisita = ref({});
   const cronologia = ref([]);
@@ -19,15 +19,17 @@ export function useMatchData(idPartido) {
     partido.value = data;
     clubLocal.value = data.clubLocal;
     clubVisita.value = data.clubVisitante;
+
     return data;
   };
 
   const fetchJugadores = async () => {
-    const { data } = await api.get(`/partidos/obtener-jugadores`, {
-      params: { idPartido, categoria: "PRIMERA" },
+    const { data } = await api.get(`/partidos/obtener-planilla`, {
+      params: { idPartido },
     });
-    jugadoresLocal.value = data.clubLocal.jugadores || [];
-    jugadoresVisitante.value = data.clubVisita.jugadores || [];
+    console.log(data);
+    planillaLocal.value = data.local;
+    planillaVisitante.value = data.visitante;
   };
 
   const fetchCronologia = async () => {
@@ -42,8 +44,8 @@ export function useMatchData(idPartido) {
   };
 
   const fetchIncidenciasDisponibles = async () => {
-     const { data } = await api.get("/incidencias/obtener-disponibles");
-     incidencias.value = data;
+    const { data } = await api.get("/incidencias/obtener-disponibles");
+    incidencias.value = data;
   };
 
   // --- FUNCIÓN PRINCIPAL ---
@@ -52,13 +54,13 @@ export function useMatchData(idPartido) {
       cargando.value = true;
       // 1. Necesitamos el partido primero para saber quienes juegan
       await fetchPartidoBase();
-      
+
       // 2. Cargamos todo lo demás en paralelo para mayor velocidad
       await Promise.all([
         fetchJugadores(),
         fetchCronologia(),
         fetchCatalogoGestion(),
-        fetchIncidenciasDisponibles()
+        fetchIncidenciasDisponibles(),
       ]);
     } catch (error) {
       console.error("Error cargando datos del partido:", error);
@@ -72,12 +74,12 @@ export function useMatchData(idPartido) {
     partido,
     clubLocal,
     clubVisita,
-    jugadoresLocal,
-    jugadoresVisitante,
+    planillaLocal,
+    planillaVisitante,
     cronologia,
     catalogoGestion,
     incidencias,
     initData,
-    fetchCronologia // Exportamos esta por si necesitas recargarla individualmente
+    fetchCronologia, // Exportamos esta por si necesitas recargarla individualmente
   };
 }

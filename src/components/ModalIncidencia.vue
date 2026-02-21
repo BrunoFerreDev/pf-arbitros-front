@@ -17,8 +17,9 @@
           <img :src="jugador.foto || 'https://via.placeholder.com/150'"
             class="h-16 w-16 rounded-full border-2 border-blue-500/20 object-cover" />
           <div>
-            <p class="text-[#111418] text-lg font-bold">{{ jugador.apellido }}, {{ jugador.nombre }}</p>
+            <p class="text-[#111418] text-lg font-bold">{{ jugador.nombreJugador || jugador.nombreIntegrante }}</p>
             <p class="text-[#60758a] text-sm">DNI: {{ formatDNI(jugador.dni) }}</p>
+            <p class="text-[#60758a] text-md capitalize" v-if="jugador.cargo">{{ jugador.cargo.replace('_', ' ') }}</p>
           </div>
         </div>
       </div>
@@ -40,7 +41,7 @@
           <div class="flex flex-col">
             <label class="text-[#111418] text-sm font-semibold pb-2">Minuto</label>
             <div class="relative">
-              <input v-model="form.minuto" type="number"
+              <input v-model.number="form.minuto" type="number"
                 class="w-full rounded-lg border border-slate-200 h-12 px-4 outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ej: 42" />
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">' min</span>
@@ -66,20 +67,13 @@
             <span class="material-symbols-outlined text-xl">swap_horiz</span>
             Jugador que ingresa
           </label>
-          <select v-model="form.jugadorEntrante"
+          <select v-model="jugadorEntrante"
             class="w-full rounded-lg border-slate-200 border h-12 px-3 bg-white outline-none focus:ring-2 focus:ring-blue-500">
             <option :value="null">Seleccione un jugador...</option>
-            <option v-for="otroJugador in listaParaCambio" :key="otroJugador.idPersona" :value="otroJugador.idPersona">
-              (#{{ otroJugador.dorsal || 'S/N' }}) {{ otroJugador.apellido }}, {{ otroJugador.nombre }}
+            <option v-for="otroJugador in suplentes" :key="otroJugador.idPersona" :value="otroJugador.idPersona">
+              (#{{ otroJugador.nroCamiseta || 'S/N' }}) {{ otroJugador.nombreJugador }}
             </option>
           </select>
-        </div>
-
-        <div class="flex flex-col" v-if="form.tipoIncidencia !== 'CAMBIO'">
-          <label class="text-[#111418] text-sm font-semibold pb-2">Observaciones</label>
-          <textarea v-model="form.descripcion"
-            class="w-full min-h-[80px] rounded-lg border border-slate-200 p-3 text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Detalles adicionales..."></textarea>
         </div>
 
         <div v-if="errores"
@@ -113,7 +107,7 @@ import api from '../services/api';
 const props = defineProps({
   jugador: { type: Object, required: true },
   partidoId: { type: [Number, String], required: true },
-  equipo: { type: Object, required: true }, // Objeto del equipo que contiene la lista .jugadores
+  suplentes: { type: Array, default: () => [] }
 });
 
 const emit = defineEmits(["close", "success"]);
@@ -122,17 +116,14 @@ const emit = defineEmits(["close", "success"]);
 const incidenciasDisponibles = ref([]);
 const cargando = ref(false);
 const errores = ref(null);
+const jugadorEntrante = ref(null);
 
 const form = reactive({
-  tipoIncidencia: "GOL",
   minuto: null,
-  descripcion: "",
   idIncidenciaCatalogo: null,
-  idPersona: props.jugador.idPersona,
-  jugadorEntrante: null,
+  tipoIncidencia: "GOL", // Mantenemos el tipo dentro del form para el radio button
 });
 
-// Tipos de UI
 const tiposDisponibles = [
   { value: "GOL", label: "Gol" },
   { value: "AMARILLA", label: "Amarilla" },
@@ -140,7 +131,6 @@ const tiposDisponibles = [
   { value: "CAMBIO", label: "Cambio" },
 ];
 
-// Mapeo para filtrar el catálogo que viene de la API
 const mapaTipoIncidencia = {
   GOL: ["GOL", "GOL_PENAL", "GOL_CONTRA"],
   AMARILLA: ["AMONESTACION"],
@@ -148,22 +138,13 @@ const mapaTipoIncidencia = {
   CAMBIO: ["SUSTITUCION_EGRESA", "SUSTITUCION_INGRESA"],
 };
 
-// Computado: Filtra los motivos del catálogo según el Tab seleccionado
 const motivosFiltrados = computed(() => {
   const tiposBuscados = mapaTipoIncidencia[form.tipoIncidencia];
   if (!tiposBuscados) return [];
   return incidenciasDisponibles.value.filter(i => tiposBuscados.includes(i.tipo));
 });
 
-// Computado: Lista de jugadores del equipo EXCLUYENDO al que ya seleccionamos
-const listaParaCambio = computed(() => {
-  if (!props.equipo || !props.equipo.jugadores) return [];
-  return props.equipo.jugadores.filter(j => j.idPersona !== props.jugador.idPersona);
-});
-
-const formatDNI = (dni) => {
-  return new Intl.NumberFormat("es-AR").format(dni || 0);
-};
+const formatDNI = (dni) => new Intl.NumberFormat("es-AR").format(dni || 0);
 
 const fetchIncidenciasDisponibles = async () => {
   try {
@@ -175,8 +156,6 @@ const fetchIncidenciasDisponibles = async () => {
 };
 
 const guardarIncidencia = async () => {
-  console.log(form);
-
   if (!form.minuto) {
     errores.value = "El minuto es obligatorio.";
     return;
@@ -186,30 +165,48 @@ const guardarIncidencia = async () => {
   errores.value = null;
 
   try {
+    // URL según tu ArbitroController de la imagen
     const url = `/arbitros/partido/${props.partidoId}/cargar-incidencia`;
 
     if (form.tipoIncidencia === "CAMBIO") {
-      if (!form.jugadorEntrante) throw new Error("Seleccione quién ingresa.");
+      if (!jugadorEntrante.value) throw new Error("Seleccione quién ingresa.");
 
       const motSalida = incidenciasDisponibles.value.find(i => i.tipo === "SUSTITUCION_EGRESA");
       const motEntrada = incidenciasDisponibles.value.find(i => i.tipo === "SUSTITUCION_INGRESA");
+      console.log(motSalida, motEntrada);
 
+      if (!motSalida || !motEntrada) throw new Error("Catálogo de cambios no disponible.");
+
+      // Enviamos ambas peticiones en paralelo
       await Promise.all([
-        api.post(url, { idIncidencia: motSalida.idIncidencia, minuto: form.minuto, idPersona: props.jugador.idPersona }),
-        api.post(url, { idIncidencia: motEntrada.idIncidencia, minuto: form.minuto, idPersona: form.jugadorEntrante })
-      ]);
+        api.post(url, {
+          idIncidencia: motSalida.idIncidencia,
+          minuto: form.minuto,
+          idPersona: props.jugador.idPersona
+        }),
+        api.post(url, {
+          idIncidencia: motEntrada.idIncidencia,
+          minuto: form.minuto,
+          idPersona: jugadorEntrante.value
+        })
+      ])
+        .then(() => {
+          console.log("Cambio registrado exitosamente");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } else {
       if (!form.idIncidenciaCatalogo) throw new Error("Seleccione el motivo.");
 
       await api.post(url, {
         idIncidencia: form.idIncidenciaCatalogo,
         minuto: form.minuto,
-        idPersona: props.jugador.idPersona,
-        observacion: form.descripcion
+        idPersona: props.jugador.idPersona
       });
     }
 
-    emit("success"); // Notifica al padre para refrescar cronología/marcador
+    emit("success");
     cerrar();
   } catch (error) {
     errores.value = error.response?.data?.message || error.message || "Error al guardar";
@@ -220,14 +217,12 @@ const guardarIncidencia = async () => {
 
 const cerrar = () => emit("close");
 
+// Resetear selecciones al cambiar de pestaña
 watch(() => form.tipoIncidencia, () => {
   form.idIncidenciaCatalogo = null;
-  form.jugadorEntrante = null;
+  jugadorEntrante.value = null;
   errores.value = null;
 });
 
-onMounted(() => {
-  fetchIncidenciasDisponibles();
-  console.log(props.partidoId);
-});
+onMounted(fetchIncidenciasDisponibles);
 </script>

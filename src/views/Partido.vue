@@ -26,8 +26,8 @@ const {
   partido,
   clubLocal,
   clubVisita,
-  jugadoresLocal,
-  jugadoresVisitante,
+  planillaLocal,
+  planillaVisitante,
   cronologia,
   catalogoGestion,
   initData,
@@ -74,12 +74,26 @@ const equipoSeleccionado = computed(() => {
   const jugador = jugadorParaIncidencia.value;
   if (!jugador || !partido.value.clubLocal) return null;
 
-  const idBuscado = jugador.idPersona; // Asegúrate que este ID coincida con tu modelo
+  const idBuscado = jugador.id // Asegúrate que este ID coincida con tu modelo
 
   // Buscamos en la lista de jugadores que ya descargamos
-  const esLocal = jugadoresLocal.value.some(j => j.idPersona === idBuscado);
+  const esLocal = planillaLocal.value.jugadores.some(j => j.id === idBuscado);
 
   return esLocal ? partido.value.clubLocal : partido.value.clubVisita;
+});
+
+const suplentesSeleccionados = computed(() => {
+  const jugador = jugadorParaIncidencia.value;
+  if (!jugador) return [];
+  console.log(planillaLocal.value.jugadores);
+
+  const idBuscado = jugador.id;
+  const esLocal = planillaLocal.value.jugadores.some(j => j.id === idBuscado);
+
+  const jugadores = esLocal ? planillaLocal.value.jugadores : jugadoresVisitante.value;
+  const suplentes = jugadores.filter(j => j.rol === 'SUPLENTE');
+  console.log(suplentes);
+  return suplentes;
 });
 
 import { useArbitros } from '../hooks/useArbitros.js';
@@ -127,7 +141,9 @@ const descargarInforme = () => {
       </div>
 
       <TeamsTabsManager :clubLocal="clubLocal" :clubVisita="clubVisita" :partido="partido"
-        :jugadoresLocal="jugadoresLocal" :jugadoresVisitante="jugadoresVisitante" @abrir-modal="abrirModal" />
+        :cuerpoTecnicoLocal="planillaLocal.cuerpoTecnico" :cuerpoTecnicoVisitante="planillaVisitante.cuerpoTecnico"
+        :jugadoresLocal="planillaLocal.jugadores" :jugadoresVisitante="planillaVisitante.jugadores"
+        @abrir-modal="abrirModal" />
     </div>
 
     <Cronologia :detallePartido="cronologia" />
@@ -135,7 +151,7 @@ const descargarInforme = () => {
 
   <Teleport to="body">
     <ModalIncidencia v-if="mostrarModal" :jugador="jugadorParaIncidencia" :partidoId="partido?.idPartido"
-      :equipo="equipoSeleccionado" @close="cerrarModal" @success="procesarExito" />
+      :equipo="equipoSeleccionado" :suplentes="suplentesSeleccionados" @close="cerrarModal" @success="procesarExito" />
 
     <ModalIncidenciaArbitro v-if="mostrarModalArbitro" :partidoId="partido?.idPartido"
       :catalogoGestion="catalogoGestion" @close="cerrarModalArbitro" @success="procesarExitoArbitro" />

@@ -15,9 +15,9 @@
       <div class="flex flex-col items-center gap-3 flex-1 text-center min-w-0">
         <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Local</p>
         <div class="size-16 bg-slate-100 rounded-full flex items-center justify-center p-2 flex-shrink-0">
-          <div class="w-full h-full bg-contain bg-no-repeat bg-center" data-alt="Escudo Arsenal" style="
-              background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuD5IUcqK-AnYjdFfQnhR8MzKeAoMoGAD9n7emw1CyzS1Lf28QmouztTu1oHwXf6grmIAfHmBT5p3nyKijYjXpiTdWwCdcWdEk-p3B_fy42l4FK4JnC5pipXkku-1fKSEi3-A8KwB_ivNMCGyZ_rahxwrHX2YkYM4qElaP6jUCqMDAcBXcYYoFhR9h-LCrVKaN3uyrpJH78R1poB3ZQjOA4VNJ7HEFMsO148EaBq-VQeCWkXDtB8BNVlFZSAvdmBMoCgBT6N0HyfH4E&quot;);
-            "></div>
+          <div class="w-full h-full bg-contain bg-no-repeat bg-center" data-alt="Escudo Arsenal" :style="{
+            backgroundImage: `url(${partido.clubLocal.escudo})`
+          }"></div>
         </div>
         <p class="font-bold text-sm truncate w-full" :title="partido.clubLocal.nombre">{{ partido.clubLocal.nombre }}</p>
       </div>
@@ -29,9 +29,9 @@
           Visitante
         </p>
         <div class="size-16 bg-slate-100 rounded-full flex items-center justify-center p-2 flex-shrink-0">
-          <div class="w-full h-full bg-contain bg-no-repeat bg-center" data-alt="Escudo Liverpool" style="
-              background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuB5fwFTyRr8sqImTh2li6nI3EVChbuaErkegone3uSNgIteyTq-asrqiJ3zdaf4MBiyMjnRG5JrCKRCSYXXy19pgZvGirVwTsUIRks-Y8kL_SXDp8hNqu8-JpLzjLyebilgXbnwQ6UBimw5D_ZJvu9yMAGt_sWEqWYAZz4mEy50HZe2qEynwOZbKoocCHMwaOEOXJgd15Js98FUEkVRBUzJ2ahHnp7YSuZjRxYits-Ayj3SnqhJNj8izLen-1qr60W20bSCqlhxmPs&quot;);
-            "></div>
+          <div class="w-full h-full bg-contain bg-no-repeat bg-center" data-alt="Escudo Liverpool" :style="{
+            backgroundImage: `url(${partido.clubVisitante.escudo})`
+          }"></div>
         </div>
         <p class="font-bold text-sm truncate w-full" :title="partido.clubVisitante.nombre">{{ partido.clubVisitante.nombre }}</p>
       </div>
