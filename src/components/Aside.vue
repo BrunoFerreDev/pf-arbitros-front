@@ -69,7 +69,7 @@
     </div>
   </aside>
   <div v-if="showModal"
-    class="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4 transition-all">
+    class="fixed inset-0 z-100 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4 transition-all">
 
     <div class="absolute inset-0" @click="showModal = false"></div>
 
