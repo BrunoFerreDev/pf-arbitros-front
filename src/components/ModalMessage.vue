@@ -5,7 +5,7 @@
             <!-- Icon Header -->
             <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-full"
                 :class="errorIcon === 'error' ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'">
-                <span class="material-symbols-outlined !text-4xl">{{ errorIcon }}</span>
+                <span class="material-symbols-outlined text-4xl!">{{ errorIcon }}</span>
             </div>
             <!-- Title -->
             <h2 class="text-2xl font-bold text-[#111218] mb-2">{{ titulo }}</h2>
@@ -27,7 +27,7 @@
             </div>
         </div>
         <!-- Footer Decoration (Optional subtle football-themed pattern) -->
-        <div class="h-1 bg-gradient-to-r from-[#1f44f9]/10 via-[#1f44f9] to-[#1f44f9]/10"></div>
+        <div class="h-1 bg-linear-to-r from-[#1f44f9]/10 via-[#1f44f9] to-[#1f44f9]/10"></div>
     </div>
 </template>
 <script setup>

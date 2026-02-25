@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white border border-slate-200 p-5 flex flex-col gap-5 shadow-sm flex-shrink-0">
+  <div class="bg-white border border-slate-200 p-5 flex flex-col gap-5 shadow-sm shrink-0">
     <div class="flex justify-between items-start">
       <div class="flex items-center gap-2">
         <span
@@ -11,7 +11,7 @@
       </div>
       <span class="material-symbols-outlined text-slate-400 cursor-pointer">more_vert</span>
     </div>
-    <div class="flex items-center justify-between px-2 flex-grow">
+    <div class="flex items-center justify-between px-2 grow">
       <div class="flex flex-col items-center gap-3 flex-1 text-center min-w-0">
         <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Local</p>
         <div class="size-16 bg-slate-100 rounded-full flex items-center justify-center p-2 shrink-0">
