@@ -8,7 +8,7 @@
         Mis Designaciones
       </h2>
       <p class="text-slate-500 text-sm">
-        Tienes 4 partidos programados para esta semana.
+        Desde aca podrás gestionar tus partidos, revisar tu agenda y consultar tus estadísticas.
       </p>
     </div>
     <!-- Botón hamburguesa mobile -->
@@ -40,9 +40,9 @@
     >
       <ul class="flex flex-col divide-y text-slate-700">
         <li class="px-6 py-4 hover:bg-slate-100">Inicio</li>
-        <li class="px-6 py-4 hover:bg-slate-100">Mi agenda</li>
+        <!-- <li class="px-6 py-4 hover:bg-slate-100">Mi agenda</li>
         <li class="px-6 py-4 hover:bg-slate-100">Mis estadísticas</li>
-        <li class="px-6 py-4 hover:bg-slate-100">Mi perfil</li>
+        <li class="px-6 py-4 hover:bg-slate-100">Mi perfil</li> -->
       </ul>
     </div>
   </header>

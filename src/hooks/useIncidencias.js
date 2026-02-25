@@ -9,7 +9,7 @@ export function useIncidencias() {
   const fetchClubInfo = async (idClub) => {
       loading.value = true;
       try {
-          const { data } = await api.get('/club/informacion', { params: { idClub } });
+          const { data } = await api.get('/clubes/informacion', { params: { idClub } });
           return data;
       } catch (err) {
           error.value = err;

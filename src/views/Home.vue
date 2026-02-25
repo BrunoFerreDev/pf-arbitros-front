@@ -3,7 +3,7 @@
     <Aside :arbitro="arbitro" />
     <main class="flex-1 flex flex-col overflow-y-auto">
       <Header />
-      <div class="px-8 py-6 space-y-8">
+      <div class="px-8 py-6 space-y-8 flex flex-col h-full justify-start">
         <div class="border-b border-slate-200 flex flex-col md:flex-row items-start gap-8">
           <button @click="() => {
             estadoPartido = 'FINALIZADO'
@@ -32,7 +32,7 @@
             de Revisión
           </button>
         </div>
-        <section>
+        <section class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-bold flex items-center gap-2">
               <span class="size-2 rounded-full bg-red-500 animate-pulse"></span>
@@ -49,15 +49,16 @@
           </div>
         </section>
         <Pagination v-if="partidos.length > 0" :page="pagination.page" :totalPages="pagination.totalPages"
-          :totalElements="pagination.totalElements" :size="pagination.size" @page-change="handlePageChange" />
+          :totalElements="pagination.totalElements" :size="pagination.size" @page-change="handlePageChange"
+          class="mt-auto" />
 
-        <StatsRefeere :stats="{
+        <!-- <StatsRefeere :stats="{
           partidosEstaTemporada: pagination.totalElements,
           tarjetasAmarillas: 82,
           tarjetasRojas: 3,
           distanciaMedia: 10.4,
           calificacionMedia: 4.8,
-        }" />
+        }" /> -->
       </div>
       <Footer />
     </main>

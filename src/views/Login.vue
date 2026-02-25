@@ -3,8 +3,7 @@ import LoginCard from '../components/LoginCard.vue'
 </script>
 
 <template>
-    <div
-        class=" min-h-screen flex items-center justify-center p-4 font-display relative">
+    <div class=" min-h-screen flex items-center justify-center p-4 font-display relative">
 
         <div class="fixed inset-0 z-0">
             <div class="absolute inset-0 bg-black/60 z-10"></div>

@@ -20,7 +20,7 @@
                     Ok
                 </button>
                 <span v-else
-                    class="flex-1 px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-[#111218] font-bold text-base transition-colors duration-200">
+                    class="flex-1 px-6 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-[#111218] font-bold text-base transition-colors duration-200 flex items-center justify-center gap-2">
                     <IconLoader class="animate-spin text-[#607AFB]" />
                     Cargando...
                 </span>

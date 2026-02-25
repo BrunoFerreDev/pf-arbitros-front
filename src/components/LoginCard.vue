@@ -112,7 +112,7 @@ const handleSubmit = () => {
         </p>
     </div>
     <div class="z-50 fixed inset-0 bg-black/50 flex items-center justify-center p-4 " v-if="showModal">
-        <ModalMessage :showModal="showModal" @closeModal="showModal = false" :titulo="tituloError" 
-            :showButton="showButton" :mensaje="mensajeError" :errorIcon="errorIcon"/>
+        <ModalMessage :showModal="showModal" @closeModal="showModal = false" :titulo="tituloError"
+            :showButton="showButton" :mensaje="mensajeError" :errorIcon="errorIcon" />
     </div>
 </template>

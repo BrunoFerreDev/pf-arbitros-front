@@ -31,18 +31,18 @@
               <p class="text-sm font-medium leading-normal">Mi Agenda</p>
             </RouterLink>
           </div> -->
-          <div
+          <!-- <div
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
             <span class="material-symbols-outlined">history</span>
             <p class="text-sm font-medium leading-normal">
               Historial de Incidencias
             </p>
-          </div>
-          <div
+          </div> -->
+          <!-- <div
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
             <span class="material-symbols-outlined">sports</span>
             <p class="text-sm font-medium leading-normal">Herramientas</p>
-          </div>
+          </div> -->
           <div
             class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
             <span class="material-symbols-outlined">settings</span>
