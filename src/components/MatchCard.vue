@@ -76,12 +76,12 @@ const props = defineProps({
   },
 });
 const competencia = ref(props.partido.competenciaDTO)
-const descargar = async (idPartido) => {
+const descargar = async (id) => {
   isLoading.value = true;
   let config = {
     method: 'get',
     maxBodyLength: Infinity,
-    url: 'http://localhost:8080/api/arbitros/designacion/pdf?idPartido=' + idPartido,
+    url: 'http://localhost:8080/api/arbitros/designacion/pdf?idPartido=' + id,
     headers: {
       'Authorization': 'Bearer ' + localStorage.getItem('token')
     },
@@ -93,7 +93,7 @@ const descargar = async (idPartido) => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Designacion_Partido_${idPartido}.pdf`);
+      link.setAttribute("download", `Designacion_Partido_${id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
